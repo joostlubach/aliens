@@ -1,0 +1,15 @@
+[submodule "vendor/ytil"]
+	path = vendor/ytil
+	url = https://github.com/joostlubach/ytil.git
+[submodule "vendor/react-util"]
+	path = vendor/react-util
+	url = https://github.com/joostlubach/react-util.git
+[submodule "vendor/logger"]
+	path = vendor/logger
+	url = https://github.com/joostlubach/logger.git
+[submodule "vendor/react-timer"]
+	path = vendor/react-timer
+	url = https://github.com/joostlubach/react-timer.git
+[submodule "vendor/mobx-store"]
+	path = vendor/mobx-store
+	url = https://github.com/joostlubach/mobx-store.git

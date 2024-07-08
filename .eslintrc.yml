@@ -1,0 +1,165 @@
+root: true
+env:
+  es6: true
+  browser: true
+
+parser: '@typescript-eslint/parser'
+
+plugins:
+  - '@stylistic'
+  - '@wf/eslint-plugin'
+  - 'react-refresh'
+  - 'unused-imports'
+  - 'react-hooks'
+
+parserOptions:
+  sourceType: module
+
+ignorePatterns:
+  - bin
+  - dist
+  - node_modules
+
+rules:
+  # Disable this rule - TS already lets us know, and very often it's because of consistency and/or overriding.
+  '@stylistic/no-unused-vars': 'off'
+
+  # There are some cases where namespaces are warranted, e.g. to easily add a bunch of properties / methods
+  # to functions.
+  '@stylistic/no-namespace': 'off'
+
+  # In some cases, like when destructuring or importing may result in duplicates, we want to allow a single
+  # underscore in identifiers (e.g. `props_backgroundColor` when destructuring props if there is alread
+  # a `backgroundColor`, or `admin_someMethod` when importing a method from a package called 'admin').`
+  'camelcase':
+    - error
+    - allow:
+      - '^[\d\w]+_[\d\w]+$'
+
+  # There is no way to ignore padded-blocks for function bodies only, so we use our own rule.
+  'padded-blocks': 'off'
+  '@wf/padded-blocks':
+    - error
+    - blocks: never
+      functionBodies: ignore
+      classes: always
+      switches: never
+
+  # Always dangling comma's in multiline objects and arrays.
+  'comma-dangle':
+    - error
+    - always-multiline
+
+  'space-before-function-paren':
+    - error
+    - anonymous: always
+      named: never
+      asyncArrow: always
+
+  'react-refresh/only-export-components':
+    - warn
+    - allowConstantExport: true
+
+  # Omg finally eslint has a rule that enforces my personal preference. Values are aligned.
+  #
+  # const foo = {
+  #   bar:   'baz',
+  #   quxxx: 'quux'
+  # }
+  #
+  # However an empty line can be used to reset the alignment:
+  #
+  # const foo = {
+  #   bar: 'baz',
+  #   qux: 'quux'
+  #
+  #   quxxx: 'quux'
+  # }
+  #
+  '@stylistic/key-spacing':
+    - error
+    - beforeColon: false
+      afterColon: true
+      mode: strict
+      align: value
+
+  # The rule above causes this rule to break, so we add some exceptions.
+  'no-multi-spaces':
+    - error
+    - exceptions:
+        Property: true
+        TSTypeAnnotation: true
+        
+        # This is a bit of a hack - @stylistic/parser does not properly detect decorators, so the
+        # parent token is always Program. This is a workaround to allow alignment of object values specified
+        # within a decorator. If we don't add this, two eslint rules keep conflicting and the spacing is added
+        # and removed. Should be ok, because there are hardly any other places where the parent token is
+        # Program.
+        Program: true
+
+  # The following rules have TS-specific versions that are more forgiving to type declarations, and/or are
+  # things checked by the TS compiler anyway.
+  'no-use-before-define': 'off'
+  '@stylistic/func-call-spacing': 'error'
+
+  # This rule does make sense, but ESLint doesn't have a way to accept assignment through an assignment
+  # operator (something like `return this._cachedValue ??= this.calculateValue()` is quite common).
+  'no-return-assign': 'off'
+
+  # Don't nobody use NodeJS callbacks anymore in 2023.
+  'n/no-callback-literal': 'off'
+
+  # Unfortunately, there is no way to distinguish between an import statement and any ol' regular object
+  # creation / destructuring, so we turn this one off completely.
+  'object-curly-spacing': 'off'
+  '@wf/curly-spacing': 
+    - error
+    - never
+    - import: true
+      export: true
+
+  '@stylistic/indent':
+    - warn
+    - 2
+    - ignoredNodes:
+      # The rule does not properly detect the indentation of the first parameter of a function if it has
+      # a decorator. Unfortunately, we need to ignore the function altogether, because the rule does not
+      # allow us to ignore the first parameter only.
+      - 'FunctionExpression:has(.params:first-child[decorators.length > 0])'
+
+  # Doesn't support typescript access modifiers in constructor. Unfortunately, @stylistic didn't port this
+  # from @typescript-eslint yet :(.
+  'no-useless-constructor': 'off'
+
+  # Turn off this rule as we use a semantic distinction between single quotes ("technical" literals such as
+  # object keys, property names, option identifiers, etc.) and double quotes ("prose" literals, such as
+  # error messages).
+  #
+  # The reasoning behind this is that we expect to use single quotes (apostrofes) in English prose often,
+  # and it also makes it easy to do a global search for any prose which may need to be replaced by i18n calls.
+  'quotes': 'off'
+  '@stylistic/jsx-quotes':
+    - error
+    - 'prefer-single'
+
+  semi: 'off'
+  '@stylistic/semi':
+    - warn
+    - never
+
+
+  # This is a complete mess tbh.
+  'multiline-ternary': 'off'
+
+  # This rule makes no sense to me. I want to order the cases in a switch statement based on their relative
+  # importance, or based on the order of enum members. This rule forces me to put the default one last, makes
+  # no sense to me.
+  'default-case-last': 'off'
+
+  ###########
+  # Imports #
+  ###########
+
+  # We have an extension for this.
+  'sort-imports': 'off'
+  'unused-imports/no-unused-imports': warn
