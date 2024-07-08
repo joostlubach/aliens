@@ -8,7 +8,7 @@ export default class ShadowUtil {
       offset  = {x: 0, y: depth},
       radius  = depth,
       color   = this.shadowColor,
-      opacity = 0.2,
+      opacity = 0.8,
     } = overrides
 
     return new Shadow(depth, {offset, radius, color, opacity})

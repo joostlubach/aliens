@@ -1,13 +1,11 @@
-import { useFonts } from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
-import { initStore, StoreProvider } from 'mobx-store'
+import { StoreProvider } from 'mobx-store'
 import * as React from 'react'
-import { ImageBackground } from 'react-native'
+import { Image, ImageBackground } from 'react-native'
 import 'react-native-reanimated'
-import { AlienLabel, Label, VBox } from '~/components'
-import { useStore } from '~/hooks'
-import Stores, { AppStore } from '~/stores'
+import { AlienLabel, Center, VBox } from '~/components'
+import Stores from '~/stores'
 import { layout, Themed } from '~/styling'
 import { observer } from '~/util'
 
@@ -20,25 +18,50 @@ const RootLayout = observer('RootLayout', () => {
     SplashScreen.hideAsync()
   }, [])
 
-  return (
-    <StoreProvider Store={Stores} onInitialized={onStoresInitialized}>
-      <ImageBackground
-        style={$.RootLayout}
-        source={require('%images/background.png')}
-      >
-        
-        <StatusBar style='light'/>
+  function render() {
+    return (
+      <StoreProvider Store={Stores} onInitialized={onStoresInitialized}>
+        <ImageBackground
+          style={$.RootLayout}
+          source={require('%images/background.png')}
+        >
+          <StatusBar style='light'/>
 
-        <Themed dark>
-          <VBox style={$.content} safeArea>
-            <AlienLabel align='center'>
-              Hoi
-            </AlienLabel>
-          </VBox>
-        </Themed>
-      </ImageBackground>
-    </StoreProvider>
-  );
+          <Themed dark>
+            <VBox style={$.content} safeArea>
+              <VBox flex style={{justifyContent: 'center'}}>
+                {renderArt()}
+                <AlienLabel align='center' size='lg'>
+                  DE BRUILOFT
+                </AlienLabel>
+              </VBox>
+            </VBox>
+          </Themed>
+        </ImageBackground>
+      </StoreProvider>
+    )
+  }
+
+  function renderArt() {
+    return (
+      <VBox overlay>
+        <Center position={{left: 10, top: 10}}>
+          <Image
+            source={require('%images/homeart1.png')}
+          />
+        </Center>
+        <Center position={{bottom: -60, right: 0}}>
+          <Image
+            source={require('%images/homeart2.png')}
+            style={{opacity: 0.5}}
+          />
+        </Center>
+
+      </VBox>
+    )
+  }
+
+  return render()
 
 })
 

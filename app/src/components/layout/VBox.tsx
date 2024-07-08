@@ -2,6 +2,8 @@ import React from 'react'
 import { StyleProp, StyleSheet, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { forwardRef } from 'react-util'
+import { Insets } from 'ytil'
+import { layout } from '~/styling'
 import { FlexProp, flexStyle } from './util'
 
 export interface Props extends ViewProps {
@@ -9,7 +11,10 @@ export interface Props extends ViewProps {
   padding?: number
   align?:   'stretch' | 'left' | 'center' | 'right'
   justify?: 'top' | 'middle' | 'bottom' | 'space-between' | 'space-around'
+  
   flex?:     FlexProp
+  overlay?:  boolean
+  position?: Partial<Insets>
 
   pointerEvents?: ViewProps['pointerEvents']
   onLayout?:      ViewProps['onLayout']
@@ -27,6 +32,8 @@ const VBox = forwardRef('VBox', (props: Props, ref: React.Ref<View>) => {
     padding,
     align,
     flex = false,
+    overlay = false,
+    position,
     safeArea = false,
     style,
     justify,
@@ -35,6 +42,8 @@ const VBox = forwardRef('VBox', (props: Props, ref: React.Ref<View>) => {
 
   const styles: StyleProp<ViewStyle> = [
     $.VBox,
+    overlay && layout.overlay,
+    position && {position: 'absolute', ...position},
     $[align ?? 'stretch'],
     $[justify ?? 'top'],
     flexStyle(flex),

@@ -28,17 +28,23 @@ function font(face: {family: string}, weight: number, size: number, lineHeight: 
 }
 
 export function getTextStyle(spec: FontSpec): TextStyle {
+  const offset = textOffset(spec)
   return {
     fontFamily: spec.family,
     fontWeight: spec.weight.toString() as TextStyle['fontWeight'],
     fontSize:   spec.size,
     lineHeight: spec.size * spec.lineHeight,
-    paddingTop: textOffset() * spec.size,
+    top:        offset.y,
+    left:       offset.x
   }
 }
 
-export function textOffset() {
-  return 0.125
+export function textOffset(font: FontSpec) {
+  if (font.family === 'Futura') {
+    return {x: 0.2 * font.size, y: 0}
+  } else {
+    return {x: 0, y: 0}
+  }
 }
 
 export interface FontSpec {

@@ -1,4 +1,4 @@
-import { Color } from 'chroma-js'
+import chroma, { Color } from 'chroma-js'
 import React from 'react'
 import {
   Linking,
@@ -91,7 +91,7 @@ const Label = memo('Label', (props: Props) => {
 
   const fontStyle = React.useMemo(
     () => text.getTextStyle(fonts[font]),
-    []
+    [font]
   )
 
   //-------
@@ -249,6 +249,7 @@ function parseMarkup(text: string, $: DynamicStyleSheet<any>): MarkupPart[] {
 const useStyles = createUseStyles(theme => ({
   Label: {
     backgroundColor: 'transparent',
+    ...theme.shadows.depth(1).toStyle(),
   },
 
   'dim-light': {
