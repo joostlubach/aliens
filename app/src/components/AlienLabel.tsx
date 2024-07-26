@@ -1,19 +1,15 @@
 import React from 'react'
-import { StyleSheet } from 'react-native'
-import Animated, { useSharedValue } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { useTimer } from 'react-timer'
 import { memo } from 'react-util'
 import { useBoolean } from 'react-util/hooks'
-import { fonts } from '~/styling'
-import Label, { Props as LabelProps } from './Label'
+import { Label, LabelProps } from './Label'
 
-const AnimatedLabel = Animated.createAnimatedComponent(Label)
-
-export interface Props extends Omit<LabelProps, 'font'> {
+export interface AlienLabelProps extends Omit<LabelProps, 'font'> {
   size?: 'lg' | 'md' | 'sm'
 }
 
-const AlienLabel = memo('AlienLabel', (props: Props) => {
+export const AlienLabel = memo('AlienLabel', (props: AlienLabelProps) => {
 
   const {size = 'md', ...rest} = props
 
@@ -58,5 +54,3 @@ const letterSpacings = {
   alien: 0,
   body:  15
 } as const
-
-export default AlienLabel

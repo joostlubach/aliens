@@ -15,7 +15,7 @@ import { createUseStyles, DynamicStyleSheet, fonts, text, useTheme } from '~/sty
 import { applyLinks, LinkRange } from '~/util/autolink'
 import { flexStyle, VBoxProps } from './layout'
 
-export interface Props extends TextProps {
+export interface LabelProps extends TextProps {
   children?: React.ReactNode
 
   href?:     string
@@ -45,7 +45,7 @@ interface MarkupPart {
   text:  string
 }
 
-const Label = memo('Label', (props: Props) => {
+export const Label = memo('Label', (props: LabelProps) => {
 
   const {
     linkStyle = null,
@@ -170,8 +170,6 @@ const Label = memo('Label', (props: Props) => {
   return render()
 
 })
-
-export default Label
 
 //------
 // Markup
