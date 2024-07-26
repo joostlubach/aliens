@@ -1,13 +1,16 @@
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
-import { StoreProvider } from 'mobx-store'
+import { StoreProvider, useStore } from 'mobx-store'
 import * as React from 'react'
-import { Image, ImageBackground } from 'react-native'
+import { Image, ImageBackground, Text, TouchableOpacity } from 'react-native'
 import 'react-native-reanimated'
+import { memo } from 'react-util'
 import { AlienLabel, Center, VBox } from '~/components'
 import Stores from '~/stores'
 import { layout, Themed } from '~/styling'
 import { observer } from '~/util'
+import HBox from '../components/layout/HBox'
+import { NfcStore } from '../stores'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -29,11 +32,12 @@ const RootLayout = observer('RootLayout', () => {
 
           <Themed dark>
             <VBox style={$.content} safeArea>
-              <VBox flex style={{justifyContent: 'center'}}>
+              <VBox flex style={{justifyContent: 'center'}} gap={10}>
                 {renderArt()}
                 <AlienLabel align='center' size='lg'>
                   DE BRUILOFT
                 </AlienLabel>
+                <DetectButton/>
               </VBox>
             </VBox>
           </Themed>
@@ -66,6 +70,35 @@ const RootLayout = observer('RootLayout', () => {
 })
 
 export default RootLayout
+
+interface DetectButtonProps {
+  
+}
+
+const DetectButton = memo('DetectButton', (props: DetectButtonProps) => {
+
+  const nfcStore = useStore(NfcStore)
+  const detect = React.useCallback(() => {
+    nfcStore.detect()
+  }, [])
+
+  function render() {
+    return (
+      <HBox justify='center'>
+        <TouchableOpacity onPress={detect}>
+          <VBox style={{padding: 5, borderRadius: 6, backgroundColor: 'red'}}>
+            <Text style={{textAlign: 'center', color: 'white'}}>
+              Detect NFC
+            </Text>
+          </VBox>
+        </TouchableOpacity>
+      </HBox>
+    )
+  }
+
+  return render()
+
+})
 
 const $ = {
   RootLayout: {

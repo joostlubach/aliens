@@ -13,13 +13,18 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "co.mosdev.aliens"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.NFC"
+      ],
+      "package": "co.mosdev.aliens"
     },
     "web": {
       "bundler": "metro",
@@ -27,9 +32,15 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      ["expo-router", {
-        "root": "./src/pages"
-      }]
+      [
+        "expo-router",
+        {
+          "root": "./src/pages"
+        }
+      ],
+      [
+        "react-native-nfc-manager"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
