@@ -49,7 +49,7 @@ export function findLinks(text: string, options: AutolinkOptions = {}): LinkRang
     matches.sort((a, b) => a[1]!.index! - b[1]!.index!)
 
     const matcher = matches[0][0]
-    const match   = matches[0][1]!
+    const match = matches[0][1]!
 
     const url = matcher.parse(match)
     if (url == null) { continue }
@@ -78,9 +78,9 @@ export function applyLinks(text: string, links: LinkRange[], style: StyleProp<Te
     }
 
     out.push(React.createElement(Text, {
-      key:       link.offset,
-      onPress:   () => Linking.openURL(link.url),
-      style:     style,
+      key:     link.offset,
+      onPress: () => Linking.openURL(link.url),
+      style:   style,
     }, text.slice(link.offset, Math.min(link.offset + link.length, text.length))))
 
     offset = Math.min(link.offset + link.length, text.length)

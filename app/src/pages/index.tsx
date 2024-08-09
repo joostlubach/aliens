@@ -1,10 +1,16 @@
-import { Link } from 'expo-router'
+import { Redirect } from 'expo-router'
 import * as React from 'react'
-import 'react-native-reanimated'
+
 import { AlienLabel, VBox } from '~/components'
 import { observer } from '~/util'
 
-const RootLayout = observer('RootLayout', () => {
+import 'react-native-reanimated'
+
+const Index = observer('Index', () => {
+
+  return (
+    <Redirect href='/start' />
+  )
 
   function render() {
     return (
@@ -12,10 +18,6 @@ const RootLayout = observer('RootLayout', () => {
         <AlienLabel align='center' size='lg'>
           DE BRUILOFT
         </AlienLabel>
-
-        <Link href="/overview">
-          Overview
-        </Link>
       </VBox>
     )
   }
@@ -24,4 +26,4 @@ const RootLayout = observer('RootLayout', () => {
 
 })
 
-export default RootLayout
+export default Index

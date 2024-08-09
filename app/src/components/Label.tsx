@@ -1,28 +1,23 @@
-import chroma, { Color } from 'chroma-js'
+import { Color } from 'chroma-js'
 import React from 'react'
-import {
-  Linking,
-  RegisteredStyle,
-  StyleProp,
-  StyleSheet,
-  Text,
-  TextProps,
-  TextStyle,
-} from 'react-native'
+import { Linking, RegisteredStyle, StyleProp, Text, TextProps, TextStyle } from 'react-native'
 import { memo } from 'react-util'
 import { flatMap } from 'ytil'
-import { createUseStyles, DynamicStyleSheet, fonts, text, useTheme } from '~/styling'
+
+import { useTheme } from '~/hooks'
+import { createUseStyles, DynamicStyleSheet, fonts, text } from '~/styling'
 import { applyLinks, LinkRange } from '~/util/autolink'
+import { getTextStyle } from '../styling/text'
 import { flexStyle, VBoxProps } from './layout'
 
 export interface LabelProps extends TextProps {
   children?: React.ReactNode
 
-  href?:     string
-  links?:    LinkRange[]
+  href?:  string
+  links?: LinkRange[]
 
-  markup?:   boolean
-  align?:    'left' | 'center' | 'right'
+  markup?: boolean
+  align?:  'left' | 'center' | 'right' | 'justify'
 
   font?: keyof typeof fonts
 
@@ -31,13 +26,13 @@ export interface LabelProps extends TextProps {
   dimmer?:    boolean
   highlight?: boolean
 
-  truncate?: boolean | 'middle' | 'head' | 'tail' | 'clip'
+  truncate?:         boolean | 'middle' | 'head' | 'tail' | 'clip'
   allowFontScaling?: boolean
 
   flex?: VBoxProps['flex']
 
-  style?:      StyleProp<TextStyle>
-  linkStyle?:  StyleProp<TextStyle>
+  style?:     StyleProp<TextStyle>
+  linkStyle?: StyleProp<TextStyle>
 }
 
 interface MarkupPart {
@@ -73,7 +68,7 @@ export const Label = memo('Label', (props: LabelProps) => {
     ...rest
   } = props
 
-  const theme  = useTheme()
+  const theme = useTheme()
 
   const textColor = React.useMemo((): Color => {
     if (color != null) {
@@ -190,12 +185,13 @@ interface Boundary {
 
 const matchers: Array<[string, ($: DynamicStyleSheet<any>) => MarkupStyle]> = [
   ['**', $ => $.bold],
-  ['*',  $ => $.italic],
-  ['_',  $ => $.italic],
+  ['*', $ => $.italic],
+  ['_', $ => $.italic],
+  ['|', $ => $.alien],
 ]
 
 function parseMarkup(text: string, $: DynamicStyleSheet<any>): MarkupPart[] {
-  const state: ParserState  = {pos: 0, styles: new Set()}
+  const state: ParserState = {pos: 0, styles: new Set()}
   const parts: MarkupPart[] = []
 
   const findNextBoundary = () => {
@@ -262,6 +258,10 @@ const useStyles = createUseStyles(theme => ({
   },
   'dimmer-dark': {
     opacity: 0.2,
+  },
+
+  alien: {
+    ...getTextStyle(fonts['alien-sm']),
   },
 
   link: {

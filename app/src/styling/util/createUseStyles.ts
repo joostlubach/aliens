@@ -1,8 +1,8 @@
-import chroma from 'chroma-js'
 import { isArray, isFunction, isPlainObject, mapValues } from 'lodash'
 import { RegisteredStyle, StyleSheet } from 'react-native'
+
+import { useTheme } from '~/hooks'
 import { Theme } from '../Theme'
-import { useTheme } from '../ThemeContext'
 
 export function createUseStyles<T extends Styles>(styles: StylesConfig<T>): UseStylesFunction<T> {
   let cacheForStyles: StyleSheetCache = cache.get(styles) ?? new Map()
@@ -10,7 +10,7 @@ export function createUseStyles<T extends Styles>(styles: StylesConfig<T>): UseS
 
   if (isFunction(styles)) {
     return () => {
-      const theme      = useTheme()
+      const theme = useTheme()
       const styleSheet = cacheForStyles.get(theme) ?? createStyleSheet(styles(theme))
       cacheForStyles.set(theme, styleSheet)
       return styleSheet
@@ -23,19 +23,19 @@ export function createUseStyles<T extends Styles>(styles: StylesConfig<T>): UseS
 }
 
 function createStyleSheet<T extends Styles>(styles: T): DynamicStyleSheet<T> {
-  const processed  = preProcessStyles(styles)
+  const processed = preProcessStyles(styles)
   const styleSheet = StyleSheet.create(processed)
 
   return createDynamicStyleFunction(styleSheet) as DynamicStyleSheet<T>
 }
 
 function createDynamicStyleFunction<T extends Styles>(styleSheet: StyleSheet<T>): DynamicStyleSheet<T> {
-  const keys   = Object.keys(styleSheet)
+  const keys = Object.keys(styleSheet)
   const values = Object.values(styleSheet)
-  const dummy  = () => {}
+  const dummy = () => {}
 
   return new Proxy(dummy, {
-    ownKeys: () => [...keys, ...Reflect.ownKeys(dummy)],
+    ownKeys:                  () => [...keys, ...Reflect.ownKeys(dummy)],
     getOwnPropertyDescriptor: (_, prop) => {
       if (typeof prop === 'string' && keys.includes(prop)) {
         return Object.getOwnPropertyDescriptor(styleSheet, prop)
@@ -113,15 +113,15 @@ function preProcessStyle(value: any) {
 const cache = new Map<object, StyleSheetCache>()
 const NoTheme = {}
 
-export type Styles               = Record<string, Record<string, any>>
-export type StyleSheet<T>        = Record<keyof T, RegisteredStyle<any>>
+export type Styles = Record<string, Record<string, any>>
+export type StyleSheet<T> = Record<keyof T, RegisteredStyle<any>>
 export type DynamicStyleSheet<T> = StyleSheet<T> & DynamicStyleFunction<T>
-export type StyleSheetCache      = WeakMap<Theme | typeof NoTheme, DynamicStyleSheet<any>>
+export type StyleSheetCache = WeakMap<Theme | typeof NoTheme, DynamicStyleSheet<any>>
 
 export type StylesConfig<T> =
   | T
   | ((theme: Theme) => T)
 
-export type UseStylesFunction<T>    = () => DynamicStyleSheet<T>
+export type UseStylesFunction<T> = () => DynamicStyleSheet<T>
 export type DynamicStyleFunction<T> = (...args: DynamicStyleArg<T>[]) => RegisteredStyle<any> | null
-export type DynamicStyleArg<T>      = RegisteredStyle<keyof T> | Record<string, any> | null | false | undefined
+export type DynamicStyleArg<T> = RegisteredStyle<keyof T> | Record<string, any> | null | false | undefined

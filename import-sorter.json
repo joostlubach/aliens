@@ -1,0 +1,27 @@
+{
+  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 100,
+  "sortConfiguration.customOrderingRules.rules": [
+    {
+        "type": "importMember",
+        "regex": "^$",
+        "orderLevel": 50,
+        "disableSort": true
+    },
+    {
+        "regex": ".mock$",
+        "orderLevel": 5
+    },
+    {
+        "regex": "^([^@.~%]|@(?!eadb/))",
+        "orderLevel": 10
+    },
+    {
+        "regex": "^(@eadb/|%)",
+        "orderLevel": 20
+    },
+    {
+        "regex": "^[~.]",
+        "orderLevel": 30
+    }
+  ]
+}

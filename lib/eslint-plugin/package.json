@@ -1,0 +1,8 @@
+{
+  "name": "@mosdev/eslint-plugin",
+  "version": "0.0.1",
+  "description": "ESLint plugin with custom rules",
+  "author": "Joost Lubach <joostlubach@gmail.com>",
+  "private": true,
+  "main": "./index.js"
+}

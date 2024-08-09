@@ -7,7 +7,7 @@ parser: '@typescript-eslint/parser'
 
 plugins:
   - '@stylistic'
-  - '@wf/eslint-plugin'
+  - '@mosdev/eslint-plugin'
   - 'react-refresh'
   - 'unused-imports'
   - 'react-hooks'
@@ -38,7 +38,7 @@ rules:
 
   # There is no way to ignore padded-blocks for function bodies only, so we use our own rule.
   'padded-blocks': 'off'
-  '@wf/padded-blocks':
+  '@mosdev/padded-blocks':
     - error
     - blocks: never
       functionBodies: ignore
@@ -59,6 +59,11 @@ rules:
   'react-refresh/only-export-components':
     - warn
     - allowConstantExport: true
+
+  'react-hooks/rules-of-hooks': 'error'
+  'react-hooks/exhaustive-deps':
+    - 'error'
+    - enableDangerousAutofixThisMayCauseInfiniteLoops: true
 
   # Omg finally eslint has a rule that enforces my personal preference. Values are aligned.
   #
@@ -112,7 +117,7 @@ rules:
   # Unfortunately, there is no way to distinguish between an import statement and any ol' regular object
   # creation / destructuring, so we turn this one off completely.
   'object-curly-spacing': 'off'
-  '@wf/curly-spacing': 
+  '@mosdev/curly-spacing': 
     - error
     - never
     - import: true

@@ -4,7 +4,8 @@ import {
 } from '@fortawesome/react-native-fontawesome'
 import React from 'react'
 import { memo } from 'react-util'
-import { useTheme } from '~/styling'
+
+import { useTheme } from '~/hooks'
 
 export interface IconProps extends FontAwesomeIconProps{
   

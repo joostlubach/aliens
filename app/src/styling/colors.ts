@@ -1,8 +1,8 @@
 import chroma, { Color } from 'chroma-js'
 
 export const transparent = chroma(0, 0, 0, 0)
-export const white       = chroma('white')
-export const black       = chroma('black')
+export const white = chroma('white')
+export const black = chroma('black')
 
 export const dimple = {
   dark:  chroma('black').alpha(0.05),
@@ -16,30 +16,30 @@ export const shim = {
 }
 
 export const bg = {
-  dark: chroma('black'),
+  dark:  chroma('black'),
   light: chroma('white'),
 }
 
 export const fg = {
   dark: {
-    normal: chroma('black'),
-    link:   chroma('blue'),
+    normal:    chroma('black'),
+    link:      chroma('blue'),
     highlight: chroma('yellow'),
   },
   light: {
-    normal: chroma('white'),
-    link:   chroma('blue'),
+    normal:    chroma('white'),
+    link:      chroma('blue'),
     highlight: chroma('yellow'),
-  }
+  },
 }
 
 export const semantic = {
   dark: {
-    primary: chroma('white')
+    primary: chroma('white'),
   },
   light: {
-    primary: chroma('black')  
-  }
+    primary: chroma('black'),  
+  },
 } as const
 
 export function isDark(color: Color) {

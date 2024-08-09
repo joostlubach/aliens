@@ -10,39 +10,44 @@ import { Image, ImageBackground } from 'react-native'
 import 'react-native-reanimated'
 import { Center, VBox } from '~/components'
 import Stores from '~/stores'
-import { Themed } from '~/styling'
+import { Themed } from '~/components'
 import { observer } from '~/util'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-ExpoSplashScreen.preventAutoHideAsync();
+ExpoSplashScreen.preventAutoHideAsync()
 
 const RootLayout = observer('RootLayout', () => {
 
+  const safeArea = useSafeAreaInsets()
+  const [initialized, setInitialized] = React.useState<boolean>(false)
+
   const onStoresInitialized = React.useCallback(() => {
+    setInitialized(true)
     ExpoSplashScreen.hideAsync()
   }, [])
 
   function render() {
     return (
       <StoreProvider Store={Stores} onInitialized={onStoresInitialized}>
-      <ImageBackground
-        style={$.RootLayout}
-        source={require('%images/background.png')}
-      >
-        <StatusBar style='light'/>
-        {renderArt()}
+        <ImageBackground
+          style={$.RootLayout}
+          source={require('%images/background.png')}
+        >
+          <StatusBar style='light'/>
+          {renderArt()}
 
-        <Themed dark>
-          <Slot/>
-        </Themed>
-      </ImageBackground>
+          <Themed dark>
+            {initialized && <Slot/>}
+          </Themed>
+        </ImageBackground>
       </StoreProvider>
     )
   }
 
   function renderArt() {
     return (
-      <VBox overlay>
+      <VBox overlay style={{...safeArea}}>
         <Center position={{left: 10, top: 10}}>
           <Image
             source={require('%images/homeart1.png')}
@@ -54,7 +59,6 @@ const RootLayout = observer('RootLayout', () => {
             style={{opacity: 0.5}}
           />
         </Center>
-
       </VBox>
     )
   }
@@ -67,7 +71,7 @@ export default RootLayout
 
 const $ = {
   RootLayout: {
-    flex: 1,
-    resizeMode: 'cover'
-  }
+    flex:       1,
+    resizeMode: 'cover',
+  },
 } as const

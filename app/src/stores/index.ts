@@ -1,11 +1,13 @@
 // @index: export * from ${relpath}
 export * from './AppStore'
-export * from './NfcStore'
+export * from './AudioStore'
+export * from './NfcStore2'
 // /index
 
 const stores = [
   // @index: require(${relpath}).${variable},
   require('./AppStore').AppStore,
+  require('./AudioStore').AudioStore,
   require('./NfcStore').NfcStore,
   // /index
 ]

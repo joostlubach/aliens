@@ -1,0 +1,8 @@
+{
+  "files.exclude": {
+    "**/node_modules": true,
+    "/app/ios/build": true,
+    "/app/android/app/build": true,
+    "/app/ios/Pods": true
+  }
+}

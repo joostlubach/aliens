@@ -1,3 +1,7 @@
+import { Color } from 'chroma-js'
+import { cloneDeep, merge } from 'lodash'
+import { DeepPartial } from 'ytil'
+
 import ShadowUtil from './ShadowUtil'
 import * as colors from './colors'
 
@@ -16,8 +20,8 @@ function createTheme(
   inverse?: Theme,
 ) {
   const semantic = which === 'light' ? colors.semantic.light : colors.semantic.dark
-  const bg       = which === 'light' ? colors.bg.light : colors.bg.dark
-  const fg       = which === 'light' ? colors.fg.dark : colors.fg.light
+  const bg = which === 'light' ? colors.bg.light : colors.bg.dark
+  const fg = which === 'light' ? colors.fg.dark : colors.fg.light
 
   const theme = {
     semantic,
@@ -39,5 +43,41 @@ export const Theme: {
   default: Theme
 } = {
   create:  createTheme,
-  default: createTheme('light')
+  default: createTheme('light'),
+}
+
+export function buildThemeWithOptions(upstream: Theme, options: ThemeOptions) {
+  let theme = upstream
+
+  if (options.light) {
+    theme = Theme.create('light')
+  }
+  if (options.dark) {
+    theme = Theme.create('dark')
+  }
+  if (options.contrast) {
+    const contrastColor = options.contrast === 'primary'
+      ? theme.semantic.primary
+      : options.contrast
+
+    theme = Theme.create(colors.isDark(contrastColor) ? 'dark' : 'light')
+  }
+
+  if (options.overrides != null) {
+    theme = cloneDeep(theme)
+    merge(theme, options.overrides)
+  }
+
+  return theme
+}
+
+export interface ThemeOptions {
+  dark?:      boolean
+  light?:     boolean
+  dim?:       boolean
+  branded?:   boolean
+  primary?:   boolean
+  secondary?: boolean
+  contrast?:  Color | 'primary'
+  overrides?: DeepPartial<Theme>
 }

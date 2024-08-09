@@ -1,6 +1,6 @@
 import { Dimensions } from 'react-native'
 
-export const window   = Dimensions.get('window')
+export const window = Dimensions.get('window')
 
 export const console = {
   width:  window.width,
@@ -30,21 +30,21 @@ export const padding = {
     lg: 16,
   },
 
-  xs:  scaled(4),
-  sm:  scaled(12),
-  md:  scaled(16),
-  lg:  scaled(20),
+  xs: scaled(4),
+  sm: scaled(12),
+  md: scaled(16),
+  lg: scaled(20),
 }
 
 export const centerWidth = {
   full:   Math.min(540, window.width),
-  padded: Math.min(540, window.width) - 2 * padding.l,
+  padded: Math.min(540, window.width) - 2 * padding.lg,
 }
 
 export const radius = {
-  s:  4,
-  m:  8,
-  l:  16,
+  s: 4,
+  m: 8,
+  l: 16,
 }
 
 export const overlay: any = {

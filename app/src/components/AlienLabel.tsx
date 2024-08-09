@@ -1,5 +1,4 @@
 import React from 'react'
-import Animated from 'react-native-reanimated'
 import { useTimer } from 'react-timer'
 import { memo } from 'react-util'
 import { useBoolean } from 'react-util/hooks'
@@ -23,7 +22,7 @@ export const AlienLabel = memo('AlienLabel', (props: AlienLabelProps) => {
 
   React.useEffect(() => {
     const flashMoments = [2000, 2200, 3000, 6700, 6900, 8000]
-    const flashDuration  = 100
+    const flashDuration = 100
 
     const flash = () => {
       hide()
@@ -52,5 +51,5 @@ export const AlienLabel = memo('AlienLabel', (props: AlienLabelProps) => {
 
 const letterSpacings = {
   alien: 0,
-  body:  15
+  body:  15,
 } as const

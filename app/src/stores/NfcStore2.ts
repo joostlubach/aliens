@@ -1,13 +1,19 @@
+import Logger from 'logger'
 import { deinit, init } from 'mobx-store'
-import nfcManager, { NfcEvents, NfcTech, TagEvent } from 'react-native-nfc-manager'
+import nfcManager, { NfcEvents, NfcTech } from 'react-native-nfc-manager'
 
-export class NfcStore {
+export class NFCStore {
+
+  private logger = new Logger('NFCStore')
 
   @init()
   public async initNfc() {
-    await nfcManager.start()
+    try {
+      await nfcManager.start()
+    } catch (error) {
+      conso
+    }
 
-    nfcManager.setEventListener(NfcEvents.DiscoverTag, this.handleDiscoverTag)
     nfcManager.setEventListener(NfcEvents.SessionClosed, this.handleSessionClosed)
     nfcManager.setEventListener(NfcEvents.StateChanged, this.handleStateChanged)
   }
@@ -15,10 +21,6 @@ export class NfcStore {
   @deinit()
   public async deinitNfc() {
     // await nfcManager.cancelTechnologyRequest()
-  }
-
-  private handleDiscoverTag = (event: TagEvent) => {
-    console.log('tag', event)
   }
 
   private handleSessionClosed = () => {
@@ -29,22 +31,18 @@ export class NfcStore {
     console.log('state', event)
   }
 
-  public async detect() {
+  public async detect(): Promise<string | null> {
     try {
       const supported = await nfcManager.isSupported()
       const enabled = await nfcManager.isEnabled()
       console.log({supported, enabled})
 
-      await nfcManager.registerTagEvent()
+      await nfcManager.requestTechnology(NfcTech.Ndef)
 
-      // const tech = await Promise.race([
-      //   nfcManager.requestTechnology(NfcTech.Ndef),
-      // ])
-      // console.log(tech)
-      // const tag = await nfcManager.getTag()
-      // console.log(tag)
+      const tag = await nfcManager.getTag()
+      return tag?.id ?? null
     } finally {
-      // await nfcManager.cancelTechnologyRequest().catch(() => {/**/})
+      await nfcManager.cancelTechnologyRequest().catch(() => {/**/})
     }
 
   }

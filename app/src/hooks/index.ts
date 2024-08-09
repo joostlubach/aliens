@@ -1,3 +1,4 @@
 // @index: export * from ${relpath}
-export * from 'mobx-store/src/useStore'
+export * from './useImageFlicker'
+export * from './useTheme'
 // /index

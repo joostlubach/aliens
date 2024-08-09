@@ -1,8 +1,8 @@
 import { TextStyle } from 'react-native'
 
 export const fontFaces = {
-  sans: fontFace('Futura', require('%fonts/futur.ttf')),
-  alien: fontFace('SpaceDude', require('%fonts/spacedude.ttf'))
+  sans:  fontFace('Futura', require('%fonts/futur.ttf')),
+  alien: fontFace('SpaceDude', require('%fonts/spacedude.ttf')),
 }
 
 export const fonts = {
@@ -12,11 +12,11 @@ export const fonts = {
 
   'body-lg': font(fontFaces.sans, 400, 32),
   'body-md': font(fontFaces.sans, 400, 28),
-  'body-sm': font(fontFaces.sans, 400, 24),
+  'body-sm': font(fontFaces.sans, 400, 16, 1.5),
 
   'alien-lg': font(fontFaces.alien, 700, 46),
   'alien-md': font(fontFaces.alien, 700, 40),
-  'alien-sm': font(fontFaces.alien, 700, 32),
+  'alien-sm': font(fontFaces.alien, 700, 22, 1.1),
 }
 
 function fontFace(family: string, source: any) {
@@ -35,7 +35,7 @@ export function getTextStyle(spec: FontSpec): TextStyle {
     fontSize:   spec.size,
     lineHeight: spec.size * spec.lineHeight,
     top:        offset.y,
-    left:       offset.x
+    left:       offset.x,
   }
 }
 
@@ -48,8 +48,8 @@ export function textOffset(font: FontSpec) {
 }
 
 export interface FontSpec {
-  family:    string
-  weight:    number
-  size:      number
+  family:     string
+  weight:     number
+  size:       number
   lineHeight: number
 }

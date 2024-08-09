@@ -5,9 +5,9 @@ export default class ShadowUtil {
 
   public depth(depth: number, overrides: Partial<Shadow> = {}): Shadow {
     const {
-      offset  = {x: 0, y: depth},
-      radius  = depth,
-      color   = this.shadowColor,
+      offset = {x: 0, y: depth},
+      radius = depth,
+      color = this.shadowColor,
       opacity = 0.8,
     } = overrides
 
