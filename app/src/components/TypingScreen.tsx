@@ -205,7 +205,7 @@ const useStyles = createUseStyles({
 
   container: {
     width:  396,
-    height: 530,
+    height: 420,
 
     paddingTop:        29,
     paddingBottom:     60,
