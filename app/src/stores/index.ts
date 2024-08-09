@@ -1,7 +1,7 @@
 // @index: export * from ${relpath}
 export * from './AppStore'
 export * from './AudioStore'
-export * from './NfcStore2'
+export * from './NfcStore'
 // /index
 
 const stores = [
