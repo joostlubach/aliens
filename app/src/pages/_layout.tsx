@@ -13,6 +13,7 @@ import Stores from '~/stores'
 import { Themed } from '~/components'
 import { observer } from '~/util'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { TabBar } from '~/app/TabBar'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 ExpoSplashScreen.preventAutoHideAsync()
@@ -40,6 +41,8 @@ const RootLayout = observer('RootLayout', () => {
           <Themed dark>
             {initialized && <Slot/>}
           </Themed>
+
+          {initialized && <TabBar/>}
         </ImageBackground>
       </StoreProvider>
     )

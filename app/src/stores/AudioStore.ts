@@ -1,7 +1,13 @@
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av'
+import { makeObservable, observable, runInAction } from 'mobx'
 import { init } from 'mobx-store'
+import { objectEntries } from 'ytil'
 
 export class AudioStore {
+
+  constructor() {
+    makeObservable(this)
+  }
 
   @init()
   public async prepareAudio() {
@@ -18,4 +24,39 @@ export class AudioStore {
     })
   }
 
+  @init()
+  public async loadSounds() {
+    const sounds = {} as SoundMap
+
+    const promises: Promise<void>[] = []
+    for (const [name, source] of objectEntries(soundSourceMap)) {
+      promises.push(
+        Audio.Sound.createAsync(source).then(({sound}) => { sounds[name] = sound })      
+      )
+    }
+
+    await Promise.all(promises)
+    runInAction(() => {
+      this.sounds = sounds
+    })
+  }
+
+  @observable
+  public sounds: SoundMap | null = null
+
+  public sound(name: keyof SoundMap) {
+    if (this.sounds == null) {
+      throw new Error("AudioStore not initialized")
+    }
+    return this.sounds[name]
+  }
+
+}
+
+const soundSourceMap = {
+  alien: require('%audio/alien.mp3'),
+}
+
+export type SoundMap = {
+  [Name in keyof typeof soundSourceMap]: Audio.Sound
 }

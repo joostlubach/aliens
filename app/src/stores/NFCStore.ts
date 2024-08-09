@@ -4,14 +4,14 @@ import nfcManager, { NfcEvents, NfcTech } from 'react-native-nfc-manager'
 
 export class NFCStore {
 
-  private logger = new Logger('NFCStore')
+  private readonly logger = new Logger('NFCStore')
 
   @init()
   public async initNfc() {
     try {
       await nfcManager.start()
     } catch (error) {
-      conso
+      this.logger.error(`Error while setting up NFC: ${error}`)
     }
 
     nfcManager.setEventListener(NfcEvents.SessionClosed, this.handleSessionClosed)

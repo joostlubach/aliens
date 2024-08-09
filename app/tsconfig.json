@@ -3,6 +3,15 @@
   "compilerOptions": {
     "strict": true,
     "experimentalDecorators": true,
+
+    "typeRoots": [
+      "node_modules",
+      "typings",
+    ],
+    "types": [
+      "yaml"
+    ],
+
     "paths": {
       "~/*": ["./src/*"],
       "%*": ["./assets/*"]

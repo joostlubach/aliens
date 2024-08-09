@@ -1,15 +1,14 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { VBox } from '~/components'
+import { TypingScreen, VBox } from '~/components'
 import { observer } from '~/util'
-import { TypingScreen } from '../components/TypingScreen'
 
 import 'react-native-reanimated'
 
-const Start = observer('Start', () => {
+const Cocktail = observer('Cocktail', () => {
 
-  const [t] = useTranslation('start')
+  const [t] = useTranslation('cocktail')
   const paragraphs = t('paragraphs') as unknown as string[]
 
   function render() {
@@ -27,4 +26,4 @@ const Start = observer('Start', () => {
 
 })
 
-export default Start
+export default Cocktail

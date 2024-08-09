@@ -1,38 +1,41 @@
-import { Audio } from 'expo-av'
+import { useStore } from 'mobx-store'
 import React from 'react'
 import { Image, ImageBackground, TouchableWithoutFeedback } from 'react-native'
 import { useTimer } from 'react-timer'
-import { memo } from 'react-util'
 import { usePrevious } from 'react-util/hooks'
 
-import { VBox } from '~/components'
 import { useImageFlicker } from '~/hooks'
 import { createUseStyles } from '~/styling'
+import { observer } from '~/util'
+import { AudioStore } from '../stores/AudioStore'
 import Pulsate from './Pulsate'
 import { TypingLabel } from './TypingLabel'
+import { VBox } from './layout'
 
 export interface TypingScreenProps {
   paragraphs: string[]
 
-  next?:        ContinueProp
-  typingSound?: Audio.Sound
+  next?:  ContinueProp
+  sound?: boolean
 
   markup?: boolean
 }
 
 export type ContinueProp = number | 'click'
 
-export const TypingScreen = memo('TypingScreen', (props: TypingScreenProps) => {
+export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) => {
 
   const {
     paragraphs,
     next = 'click',
-    typingSound,
+    sound = true,
     markup,
   } = props
 
   const timer = useTimer()
   const typingLabelRef = React.useRef<TypingLabel>(null)
+
+  const audioStore = useStore(AudioStore)
 
   const [currentParagraphIndex, setCurrentParagraphIndex] = React.useState<number>(0)
   const currentParagraph = paragraphs[currentParagraphIndex]
@@ -43,6 +46,7 @@ export const TypingScreen = memo('TypingScreen', (props: TypingScreenProps) => {
   React.useEffect(() => {
     if (prevParagraphs !== paragraphs) {
       setCurrentParagraphIndex(0)
+      setWaitingForPress(false)
     }
   }, [paragraphs, prevParagraphs])
 
@@ -53,12 +57,14 @@ export const TypingScreen = memo('TypingScreen', (props: TypingScreenProps) => {
 
   const handleTypingEnd = React.useCallback(() => {
     if (next == null) { return }
+    if (currentParagraphIndex === paragraphs.length - 1) { return }
+
     if (next === 'click') {
       setWaitingForPress(true)
     } else {
       timer.debounce(nextParagraph, next)
     }
-  }, [next, nextParagraph, timer])
+  }, [currentParagraphIndex, next, nextParagraph, paragraphs.length, timer])
 
   const handlePress = React.useCallback(() => {
     if (waitingForPress) {
@@ -100,7 +106,7 @@ export const TypingScreen = memo('TypingScreen', (props: TypingScreenProps) => {
             children={currentParagraph}
             onTypingEnd={handleTypingEnd}
             font='body-sm'
-            sound={typingSound}
+            sound={audioStore.sound('alien')}
             markup={markup}
           />
         )}
@@ -130,7 +136,7 @@ const useStyles = createUseStyles({
   content: {
     width:             374,
     height:            340,
-    paddingTop:        46,
+    paddingTop:        42,
     paddingBottom:     76,
     paddingHorizontal: 56,
   },
