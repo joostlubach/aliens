@@ -8,7 +8,7 @@ I18next
   .init({
     resources: locales,
   
-    lng:         'nl',
+    lng:         'en',
     fallbackLng: 'en',
 
     compatibilityJSON: 'v3',

@@ -6,9 +6,9 @@ import { observer } from '~/util'
 
 import 'react-native-reanimated'
 
-const CropCircle = observer('CropCircle', () => {
+const crop = observer('crop', () => {
 
-  const [t] = useTranslation('cropcircle')
+  const [t] = useTranslation('crop')
   const paragraphs = t('paragraphs') as unknown as string[]
 
   function render() {
@@ -26,4 +26,4 @@ const CropCircle = observer('CropCircle', () => {
 
 })
 
-export default CropCircle
+export default crop

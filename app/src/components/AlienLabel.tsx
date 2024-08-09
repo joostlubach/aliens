@@ -2,6 +2,7 @@ import React from 'react'
 import { useTimer } from 'react-timer'
 import { memo } from 'react-util'
 import { useBoolean } from 'react-util/hooks'
+
 import { Label, LabelProps } from './Label'
 
 export interface AlienLabelProps extends Omit<LabelProps, 'font'> {
@@ -38,7 +39,7 @@ export const AlienLabel = memo('AlienLabel', (props: AlienLabelProps) => {
     }
 
     sequence()
-  }, [])
+  }, [flashTimer, hide, sequenceTimer, show])
 
   return (
     <Label

@@ -30,7 +30,7 @@ const RootLayout = observer('RootLayout', () => {
 
   function render() {
     return (
-      <StoreProvider Store={Stores} onInitialized={onStoresInitialized}>
+      <StoreProvider Store={Stores} onInitialized={onStoresInitialized} initializationTimeout={30_000}>
         <ImageBackground
           style={$.RootLayout}
           source={require('%images/background.png')}

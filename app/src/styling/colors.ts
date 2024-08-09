@@ -35,10 +35,10 @@ export const fg = {
 
 export const semantic = {
   dark: {
-    primary: chroma('white'),
+    primary: chroma('#663C7E'),
   },
   light: {
-    primary: chroma('black'),  
+    primary: chroma('#663C7E'),  
   },
 } as const
 

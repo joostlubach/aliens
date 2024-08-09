@@ -13,3 +13,6 @@
 [submodule "vendor/mobx-store"]
 	path = vendor/mobx-store
 	url = https://github.com/joostlubach/mobx-store.git
+[submodule "vendor/yaml2json"]
+	path = vendor/yaml2json
+	url = git@github.com:joostlubach/yaml2json.git

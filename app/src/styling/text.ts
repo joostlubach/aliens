@@ -16,7 +16,7 @@ export const fonts = {
 
   'alien-lg': font(fontFaces.alien, 700, 46),
   'alien-md': font(fontFaces.alien, 700, 40),
-  'alien-sm': font(fontFaces.alien, 700, 22, 1.1),
+  'alien-sm': font(fontFaces.alien, 700, 22, 1.2),
 }
 
 function fontFace(family: string, source: any) {

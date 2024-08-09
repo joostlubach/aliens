@@ -45,10 +45,7 @@ export class AudioStore {
   public sounds: SoundMap | null = null
 
   public sound(name: keyof SoundMap) {
-    if (this.sounds == null) {
-      throw new Error("AudioStore not initialized")
-    }
-    return this.sounds[name]
+    return this.sounds?.[name] ?? null
   }
 
 }

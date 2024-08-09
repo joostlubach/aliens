@@ -1,11 +1,11 @@
 import { useStore } from 'mobx-store'
 import React from 'react'
-import { Image, ImageBackground, TouchableWithoutFeedback } from 'react-native'
+import { Image, LayoutChangeEvent, PanResponder, ScrollView } from 'react-native'
 import { useTimer } from 'react-timer'
 import { usePrevious } from 'react-util/hooks'
 
 import { useImageFlicker } from '~/hooks'
-import { createUseStyles } from '~/styling'
+import { createUseStyles, layout } from '~/styling'
 import { observer } from '~/util'
 import { AudioStore } from '../stores/AudioStore'
 import Pulsate from './Pulsate'
@@ -18,99 +18,162 @@ export interface TypingScreenProps {
   next?:  ContinueProp
   sound?: boolean
 
-  markup?: boolean
+  markup?:  boolean
+  onEvent?: (event: string) => any
 }
 
-export type ContinueProp = number | 'click'
+export type ContinueProp = number | 'press'
 
 export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) => {
 
   const {
     paragraphs,
-    next = 'click',
+    next = 'press',
     sound = true,
+    onEvent,
     markup,
   } = props
 
   const timer = useTimer()
+
   const typingLabelRef = React.useRef<TypingLabel>(null)
+  const scrollViewRef = React.useRef<ScrollView>(null)
 
   const audioStore = useStore(AudioStore)
 
   const [currentParagraphIndex, setCurrentParagraphIndex] = React.useState<number>(0)
-  const currentParagraph = paragraphs[currentParagraphIndex]
 
-  const [waitingForPress, setWaitingForPress] = React.useState<boolean>(false)
+  const [status, setStatus] = React.useState<TypingScreenStatus>(TypingScreenStatus.Typing)
 
   const prevParagraphs = usePrevious(paragraphs)
   React.useEffect(() => {
     if (prevParagraphs !== paragraphs) {
       setCurrentParagraphIndex(0)
-      setWaitingForPress(false)
+      setStatus(TypingScreenStatus.Typing)
     }
   }, [paragraphs, prevParagraphs])
 
   const nextParagraph = React.useCallback(() => {
-    if (currentParagraphIndex === paragraphs.length - 1) { return }
-    setCurrentParagraphIndex(currentParagraphIndex + 1)
+    if (currentParagraphIndex === paragraphs.length - 1) {
+      setStatus(TypingScreenStatus.Done)
+    } else {
+      setStatus(TypingScreenStatus.Typing)
+      setCurrentParagraphIndex(currentParagraphIndex + 1)
+    }
   }, [currentParagraphIndex, paragraphs.length])
 
   const handleTypingEnd = React.useCallback(() => {
     if (next == null) { return }
-    if (currentParagraphIndex === paragraphs.length - 1) { return }
 
-    if (next === 'click') {
-      setWaitingForPress(true)
+    if (currentParagraphIndex === paragraphs.length - 1) {
+      setStatus(TypingScreenStatus.Done)
+    } else if (next === 'press') {
+      setStatus(TypingScreenStatus.WaitingForPress)
     } else {
       timer.debounce(nextParagraph, next)
     }
   }, [currentParagraphIndex, next, nextParagraph, paragraphs.length, timer])
 
   const handlePress = React.useCallback(() => {
-    if (waitingForPress) {
-      setWaitingForPress(false)
+    if (status === TypingScreenStatus.WaitingForPress) {
       nextParagraph()
     } else {
       typingLabelRef.current?.skip()
     }
-  }, [nextParagraph, waitingForPress])
+  }, [nextParagraph, status])
 
-  const image = useImageFlicker(
-    require('%images/screen.png'),
-    require('%images/screen2.png'),
+  // #region Auto-scrolling
+
+  const visibleHeightsRef = React.useRef<number[]>([])
+  const scrollViewHeightRef = React.useRef<number>(0)
+
+  const layoutScrollView = React.useCallback((event: LayoutChangeEvent) => {
+    scrollViewHeightRef.current = event.nativeEvent.layout.height    
+  }, [])
+
+  const onVisibleHeightChanged = React.useCallback((index: number, height: number) => {
+    visibleHeightsRef.current[index] = height
+
+    let totalHeight = visibleHeightsRef.current.reduce((total, height) => total + (height ?? 0), 0)
+
+    // Add the inter-paragraph spacings.
+    totalHeight += layout.padding.md * (visibleHeightsRef.current.length - 1)
+
+    // Add both paddings.
+    totalHeight += 2 * layout.padding.md
+
+    scrollViewRef?.current?.scrollTo({
+      y:        totalHeight - scrollViewHeightRef.current,
+      animated: true,
+    })
+  }, [])
+
+  // #endregion
+
+  const bgimage = useImageFlicker(
+    require('%images/screenbg.png'),
+    require('%images/screenbg2.png'),
     '          ..        . .             . . . .           .  .'
   )
+
+  const panResponder = React.useMemo(() => PanResponder.create({
+    onStartShouldSetPanResponder: () => status !== TypingScreenStatus.Done,
+    onMoveShouldSetPanResponder:  () => false,
+    onPanResponderRelease:        handlePress,
+  }), [handlePress, status])
 
   const $ = useStyles()
 
   function render() {
     return (
-      <TouchableWithoutFeedback onPress={handlePress}>
-        <VBox style={$.TypingScreen}>
-          <ImageBackground source={image} resizeMode='contain'>
-            {renderContent()}
-            {waitingForPress && renderFingerprint()}
-          </ImageBackground>
+      <VBox style={$.TypingScreen} {...panResponder.panHandlers}>
+        <VBox style={$.container}>
+          <Image
+            style={$.background}
+            source={bgimage}
+            resizeMode='contain'
+          />
+          
+          {renderContent()}
+          
+          <Image
+            style={$.frame}
+            source={require('%images/screenfg.png')}
+            resizeMode='contain'
+          />
+
+          {status === TypingScreenStatus.WaitingForPress && renderFingerprint()}
         </VBox>
-      </TouchableWithoutFeedback>
+      </VBox>
     )
   }
 
   function renderContent() {
     return (
-      <VBox style={$.content}>
-        {currentParagraph != null && (
-          <TypingLabel
-            ref={typingLabelRef}
-            key={currentParagraph}
-            children={currentParagraph}
-            onTypingEnd={handleTypingEnd}
-            font='body-sm'
-            sound={audioStore.sound('alien')}
-            markup={markup}
-          />
-        )}
-      </VBox>
+      <ScrollView
+        style={$.scrollView}
+        contentContainerStyle={$.scrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={status === TypingScreenStatus.Done}
+        onLayout={layoutScrollView}
+        ref={scrollViewRef}
+      >
+        <VBox style={$.labelContainer} gap={layout.padding.md}>
+          {paragraphs.slice(0, currentParagraphIndex + 1).map((paragraph, index) => (
+            <TypingLabel
+              ref={typingLabelRef}
+              key={index}
+              children={paragraph}
+              onTypingEnd={handleTypingEnd}
+              font='body-sm'
+              sound={sound ? audioStore.sound('alien') ?? undefined : undefined}
+              onVisibleHeightChanged={onVisibleHeightChanged.bind(null, index)}
+              onEvent={onEvent}
+              markup={markup}
+            />
+          ))}
+        </VBox>
+      </ScrollView>
     )
   }
 
@@ -129,16 +192,55 @@ export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) 
   
 })
 
+enum TypingScreenStatus {
+  Typing,
+  WaitingForPress,
+  Done,
+}
+
 const useStyles = createUseStyles({
   TypingScreen: {
+    alignItems: 'center',
   },
 
-  content: {
-    width:             374,
-    height:            340,
-    paddingTop:        42,
-    paddingBottom:     76,
-    paddingHorizontal: 56,
+  container: {
+    width:  396,
+    height: 530,
+
+    paddingTop:        29,
+    paddingBottom:     60,
+    paddingHorizontal: 48,
+  },
+
+  background: {
+    position: 'absolute',
+    top:      0,
+    left:     0,
+    right:    0,
+    bottom:   0,
+  },
+
+  frame: {
+    position:      'absolute',
+    top:           0,
+    left:          0,
+    right:         0,
+    bottom:        0,
+    pointerEvents: 'none',
+  },
+
+  scrollView: {
+    flex: 1,
+  },
+
+  scrollContent: {
+    flexGrow:        1,
+    paddingVertical: layout.padding.sm,
+
+  },
+
+  labelContainer: {
+    flexGrow: 1,
   },
 
   fingerprint: {
