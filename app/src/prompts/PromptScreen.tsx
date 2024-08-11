@@ -1,37 +1,45 @@
 import { useStore } from 'mobx-store'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Image, LayoutChangeEvent, PanResponder, ScrollView } from 'react-native'
 import { useTimer } from 'react-timer'
 import { usePrevious } from 'react-util/hooks'
 
+import { Button, Center, TypingLabel, VBox } from '~/components'
 import { useImageFlicker } from '~/hooks'
+import { AudioStore } from '~/stores'
 import { createUseStyles, layout } from '~/styling'
 import { observer } from '~/util'
-import { AudioStore } from '../stores/AudioStore'
-import Pulsate from './Pulsate'
-import { TypingLabel } from './TypingLabel'
-import { VBox } from './layout'
+import Pulsate from '../components/Pulsate'
+import { focusedPromptSize } from './layout'
 
-export interface TypingScreenProps {
+export interface PromptScreenProps {
   paragraphs: string[]
 
-  next?:  ContinueProp
-  sound?: boolean
+  next?:        ContinueProp
+  sound?:       boolean
+  interactive?: boolean
+  paused?:      boolean
 
-  markup?:  boolean
-  onEvent?: (event: string) => any
+  markup?: boolean
+
+  onEvent?:        (event: string) => any
+  requestDismiss?: () => any
 }
 
 export type ContinueProp = number | 'press'
 
-export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) => {
+export const PromptScreen = observer('PromptScreen', (props: PromptScreenProps) => {
 
   const {
     paragraphs,
     next = 'press',
     sound = true,
-    onEvent,
+    interactive = true,
+    paused = false,
     markup,
+    onEvent,
+    requestDismiss,
   } = props
 
   const timer = useTimer()
@@ -43,21 +51,21 @@ export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) 
 
   const [currentParagraphIndex, setCurrentParagraphIndex] = React.useState<number>(0)
 
-  const [status, setStatus] = React.useState<TypingScreenStatus>(TypingScreenStatus.Typing)
+  const [status, setStatus] = React.useState<PromptScreenStatus>(PromptScreenStatus.Typing)
 
   const prevParagraphs = usePrevious(paragraphs)
   React.useEffect(() => {
     if (prevParagraphs !== paragraphs) {
       setCurrentParagraphIndex(0)
-      setStatus(TypingScreenStatus.Typing)
+      setStatus(PromptScreenStatus.Typing)
     }
   }, [paragraphs, prevParagraphs])
 
   const nextParagraph = React.useCallback(() => {
     if (currentParagraphIndex === paragraphs.length - 1) {
-      setStatus(TypingScreenStatus.Done)
+      setStatus(PromptScreenStatus.Done)
     } else {
-      setStatus(TypingScreenStatus.Typing)
+      setStatus(PromptScreenStatus.Typing)
       setCurrentParagraphIndex(currentParagraphIndex + 1)
     }
   }, [currentParagraphIndex, paragraphs.length])
@@ -66,16 +74,16 @@ export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) 
     if (next == null) { return }
 
     if (currentParagraphIndex === paragraphs.length - 1) {
-      setStatus(TypingScreenStatus.Done)
+      setStatus(PromptScreenStatus.Done)
     } else if (next === 'press') {
-      setStatus(TypingScreenStatus.WaitingForPress)
+      setStatus(PromptScreenStatus.WaitingForPress)
     } else {
       timer.debounce(nextParagraph, next)
     }
   }, [currentParagraphIndex, next, nextParagraph, paragraphs.length, timer])
 
   const handlePress = React.useCallback(() => {
-    if (status === TypingScreenStatus.WaitingForPress) {
+    if (status === PromptScreenStatus.WaitingForPress) {
       nextParagraph()
     } else {
       typingLabelRef.current?.skip()
@@ -117,33 +125,34 @@ export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) 
   )
 
   const panResponder = React.useMemo(() => PanResponder.create({
-    onStartShouldSetPanResponder: () => status !== TypingScreenStatus.Done,
+    onStartShouldSetPanResponder: () => status !== PromptScreenStatus.Done,
     onMoveShouldSetPanResponder:  () => false,
     onPanResponderRelease:        handlePress,
   }), [handlePress, status])
+
+  const [t] = useTranslation()
 
   const $ = useStyles()
 
   function render() {
     return (
-      <VBox style={$.TypingScreen} {...panResponder.panHandlers}>
-        <VBox style={$.container}>
-          <Image
-            style={$.background}
-            source={bgimage}
-            resizeMode='contain'
-          />
-          
-          {renderContent()}
-          
-          <Image
-            style={$.frame}
-            source={require('%images/screenfg.png')}
-            resizeMode='contain'
-          />
+      <VBox style={$.PromptScreen} {...interactive && status !== PromptScreenStatus.Done ? panResponder.panHandlers : null}>
+        <Image
+          style={$.background}
+          source={bgimage}
+          resizeMode='contain'
+        />
+        
+        {renderContent()}
+        
+        <Image
+          style={$.frame}
+          source={require('%images/screenfg.png')}
+          resizeMode='contain'
+        />
 
-          {status === TypingScreenStatus.WaitingForPress && renderFingerprint()}
-        </VBox>
+        {status === PromptScreenStatus.WaitingForPress && renderFingerprint()}
+        {status === PromptScreenStatus.Done && renderDismissButton()}
       </VBox>
     )
   }
@@ -154,7 +163,7 @@ export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) 
         style={$.scrollView}
         contentContainerStyle={$.scrollContent}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={status === TypingScreenStatus.Done}
+        scrollEnabled={interactive && status === PromptScreenStatus.Done}
         onLayout={layoutScrollView}
         ref={scrollViewRef}
       >
@@ -170,10 +179,23 @@ export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) 
               onVisibleHeightChanged={onVisibleHeightChanged.bind(null, index)}
               onEvent={onEvent}
               markup={markup}
+              paused={paused}
             />
           ))}
         </VBox>
       </ScrollView>
+    )
+  }
+
+  function renderDismissButton() {
+    return (
+      <Center style={$.dismissButton}>
+        <Button
+          caption={t('buttons:dismiss')}
+          onPress={requestDismiss}
+          small
+        />
+      </Center>
     )
   }
 
@@ -192,23 +214,17 @@ export const TypingScreen = observer('TypingScreen', (props: TypingScreenProps) 
   
 })
 
-enum TypingScreenStatus {
+enum PromptScreenStatus {
   Typing,
   WaitingForPress,
   Done,
 }
 
 const useStyles = createUseStyles({
-  TypingScreen: {
-    alignItems: 'center',
-  },
-
-  container: {
-    width:  396,
-    height: 420,
-
-    paddingTop:        29,
-    paddingBottom:     60,
+  PromptScreen: {
+    ...focusedPromptSize,
+    paddingTop:        24,
+    paddingBottom:     54,
     paddingHorizontal: 48,
   },
 
@@ -259,5 +275,11 @@ const useStyles = createUseStyles({
   fingerprintImage: {
     width:  '100%',
     height: '100%',
+  },
+
+  dismissButton: {
+    position: 'absolute',
+    bottom:   24,
+    right:    64,
   },
 })

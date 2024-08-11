@@ -4,12 +4,10 @@ import * as React from 'react'
 import { AlienLabel, VBox } from '~/components'
 import { observer } from '~/util'
 
-import 'react-native-reanimated'
-
 const Index = observer('Index', () => {
 
   return (
-    <Redirect href='/start' />
+    <Redirect href='/game' />
   )
 
   function render() {

@@ -6,16 +6,16 @@ export const fontFaces = {
 }
 
 export const fonts = {
-  'title-lg': font(fontFaces.sans, 700, 36),
-  'title-md': font(fontFaces.sans, 700, 24),
-  'title-sm': font(fontFaces.sans, 700, 18),
+  'title-lg': font(fontFaces.sans, 700, 20),
+  'title-md': font(fontFaces.sans, 700, 16),
+  'title-sm': font(fontFaces.sans, 700, 14),
 
-  'body-lg': font(fontFaces.sans, 400, 32),
-  'body-md': font(fontFaces.sans, 400, 28),
+  'body-lg': font(fontFaces.sans, 400, 24),
+  'body-md': font(fontFaces.sans, 400, 20),
   'body-sm': font(fontFaces.sans, 400, 16, 1.5),
 
-  'alien-lg': font(fontFaces.alien, 700, 46),
-  'alien-md': font(fontFaces.alien, 700, 40),
+  'alien-lg': font(fontFaces.alien, 700, 30),
+  'alien-md': font(fontFaces.alien, 700, 26),
   'alien-sm': font(fontFaces.alien, 700, 22, 1.2),
 }
 

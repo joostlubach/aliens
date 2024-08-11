@@ -1,0 +1,8 @@
+qr:
+  title: Scanner
+
+  permission:
+    request:
+      prompt: DEAR HUMAN, WE REQUIRE ACCESS TO YOUR EYEPIECE TO SCAN OUR SECRET CODES
+      button: GIVE PERMISSION
+    denied: YOU HAVE DENIED CAMERA PERMISSION

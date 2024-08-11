@@ -1,17 +1,18 @@
 import { Audio } from 'expo-av'
 import React from 'react'
 import { LayoutChangeEvent, View } from 'react-native'
-import { useTimer } from 'react-timer'
 import { forwardRef } from 'react-util'
 import { useContinuousRef, usePrevious } from 'react-util/hooks'
 
 import { createUseStyles } from '~/styling'
+import Timer from '../../../vendor/react-timer/src/Timer'
 import { Label, LabelProps } from './Label'
 
 export interface TypingLabelProps extends Omit<LabelProps, 'children'> {
   children?: string | null
 
-  sound?: Audio.Sound
+  sound?:  Audio.Sound
+  paused?: boolean
 
   onVisibleHeightChanged?: (height: number) => void
   onTypingEnd?:            () => void
@@ -27,6 +28,7 @@ export const TypingLabel = forwardRef('TypingLabel', (props: TypingLabelProps, r
   const {
     children,
     sound,
+    paused = false,
     onVisibleHeightChanged,
     onTypingEnd,
     onEvent,
@@ -38,64 +40,39 @@ export const TypingLabel = forwardRef('TypingLabel', (props: TypingLabelProps, r
     [children]
   )
 
-  const [displayedText, setDisplayedText] = React.useState<string>('')
-  const displayedTextRef = useContinuousRef(displayedText)
+  const [displayText, setDisplayText] = React.useState<string>('')
+
   const soundRef = useContinuousRef(sound)
 
-  const timer = useTimer()
-
-  const startAudio = React.useCallback(() => {
-    if (sound == null) { return }
-
-    sound.playAsync()
-    return () => { sound.stopAsync }
-  }, [sound])
-
-  const stopAudio = React.useCallback(() => {
-    const sound = soundRef.current
-    sound?.stopAsync()
+  const onTypingStart = React.useCallback(() => {
+    soundRef.current?.playAsync().catch(() => {})
   }, [soundRef])
 
-  const maybeFireEvent = React.useCallback((index: number) => {
-    const event = events.find(it => it.index === index)
-    if (event == null) { return }
-    onEvent?.(event.name)
-  }, [events, onEvent])
+  const onTypingStop = React.useCallback(() => {
+    soundRef.current?.stopAsync().catch(() => {})
+  }, [soundRef])
 
-  const startTyping = React.useCallback(() => {
-    if (text.length === 0) { return }
 
-    timer.clearAll()
+  const typer = React.useMemo(
+    () => new AutoTyper(text, setDisplayText),
+    [text],
+  )
 
-    const nextLetter = () => {
-      const displayedText = displayedTextRef.current
-      if (displayedText.length === text.length) {
-        stopAudio()
-        onTypingEnd?.()
-        return
-      }
+  typer.events = events
+  typer.onEvent = onEvent
+  typer.onTypingStart = onTypingStart
+  typer.onTypingStop = onTypingStop
+  typer.onTypingEnd = onTypingEnd
 
-      maybeFireEvent(displayedText.length - 1)
-
-      const currentLetter = text[displayedText.length]
-      const interval = currentLetter === '.' ? 200 : 30
-
-      setDisplayedText(text.slice(0, displayedText.length + 1))
-      timer.debounce(nextLetter, interval)
-    }
-
-    startAudio()
-    timer.debounce(nextLetter, 0)
-  }, [displayedTextRef, maybeFireEvent, onTypingEnd, startAudio, stopAudio, text, timer])
-
-  const prevText = usePrevious(text)
+  const prevPaused = usePrevious(paused)
   React.useEffect(() => {
-    if (text === prevText) { return }
-
-    setDisplayedText('')
-    startTyping()
-    onVisibleHeightChanged?.(0)
-  }, [onVisibleHeightChanged, prevText, startTyping, text, timer])
+    if (paused === prevPaused) { return }
+    if (paused) {
+      typer.pause()
+    } else {
+      typer.resume()  
+    }
+  }, [paused, prevPaused, soundRef, typer])
 
   const layoutVisibleText = React.useCallback((event: LayoutChangeEvent) => {
     onVisibleHeightChanged?.(event.nativeEvent.layout.height)
@@ -103,16 +80,9 @@ export const TypingLabel = forwardRef('TypingLabel', (props: TypingLabelProps, r
 
   React.useImperativeHandle(ref, () => ({
     skip() {
-      timer.clearAll()
-      setDisplayedText(text)
-      stopAudio()
-      onTypingEnd?.()
-
-      for (const event of events) {
-        onEvent?.(event.name)
-      }
+      typer.skip()
     },
-  }), [events, onEvent, onTypingEnd, stopAudio, text, timer])
+  }), [typer])
 
   const $ = useStyles()
 
@@ -125,7 +95,7 @@ export const TypingLabel = forwardRef('TypingLabel', (props: TypingLabelProps, r
       />
       <Label
         style={$.visibleText}
-        children={displayedText}
+        children={displayText}
         onLayout={layoutVisibleText}
         {...rest}
       />
@@ -133,6 +103,104 @@ export const TypingLabel = forwardRef('TypingLabel', (props: TypingLabelProps, r
   )
 
 })
+
+class AutoTyper {
+
+  constructor(
+    private readonly text: string,
+    private onDisplayTextChange: (text: string) => void
+  ) {}
+
+  private timer = new Timer()
+
+  private displayText: string = ''
+
+  public get isDone() {
+    return this.displayText.length === this.text.length
+  }
+
+  public events:         TypingLabelEvent[] = []
+  public onEvent?:       (event: string) => void
+  public onTypingStart?: () => void
+  public onTypingStop?:  () => void
+  public onTypingEnd?:   () => void
+
+  // #region Interface
+
+  public start() {
+    if (this.timer.isActive) { return }
+    if (this.text.length === 0) { return }
+
+    this.onTypingStart?.()
+    this.timer.setTimeout(() => this.nextLetter(), 0)
+  }
+
+  public pause() {
+    if (this.isDone) { return }
+    if (!this.timer.isActive) { return }
+    
+    this.timer.disable()
+    this.onTypingStart?.()
+  }
+
+  public resume() {
+    if (this.isDone) { return }
+    if (this.timer.isActive) { return }
+
+    this.timer.enable()
+    this.timer.debounce(() => this.nextLetter(), 0)
+    this.onTypingStart?.()
+  }
+
+  public skip() {
+    if (this.isDone) { return }
+
+    this.displayText = this.text
+    this.onDisplayTextChange(this.displayText)
+    this.endTyping()
+
+    for (const event of this.events) {
+      this.onEvent?.(event.name)
+    }
+  }
+
+  // #endregion
+
+  // #region Internals
+
+  private nextLetter() {
+    if (this.isDone) {
+      this.endTyping()
+      return
+    }
+
+    this.fireEventAt(this.displayText.length - 1)
+
+    const currentLetter = this.text[this.displayText.length]
+    const interval = currentLetter === '.' ? 200 : 30
+
+    this.displayText = this.text.slice(0, this.displayText.length + 1)
+    this.onDisplayTextChange?.(this.displayText)
+  
+    this.timer.debounce(() => { this.nextLetter() }, interval)
+  }
+
+  private fireEventAt(index: number) {
+    const event = this.events.find(it => it.index === index)
+    if (event == null) { return }
+
+    this.onEvent?.(event.name)
+  }
+
+  private endTyping() {
+    this.timer.clearAll()
+    this.onTypingStop?.()
+    this.onTypingEnd?.()
+  }
+
+  // #endregion
+
+}
 
 function extractEvents(textWithEvents: string): [string, TypingLabelEvent[]] {
   let remainder = textWithEvents

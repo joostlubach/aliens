@@ -2,15 +2,16 @@
 export * from './AppStore'
 export * from './AudioStore'
 export * from './GameStore'
-export * from './NFCStore'
+export * from './QRStore'
+export * from './game'
 // /index
 
 const stores = [
-  // @index: require(${relpath}).${variable},
+  // @index(Store.ts$): require(${relpath}).${variable},
   require('./AppStore').AppStore,
   require('./AudioStore').AudioStore,
   require('./GameStore').GameStore,
-  require('./NFCStore').NFCStore,
+  require('./QRStore').QRStore,
   // /index
 ]
 export default stores

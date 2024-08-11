@@ -4,6 +4,8 @@ import colanderYml from './colander.yml.json'
 import cropYml from './crop.yml.json'
 import endgameYml from './endgame.yml.json'
 import invitationYml from './invitation.yml.json'
+import miscYml from './misc.yml.json'
+import qrYml from './qr.yml.json'
 import startYml from './start.yml.json'
 // /index
 
@@ -14,6 +16,8 @@ const en = {
   ...cropYml,
   ...endgameYml,
   ...invitationYml,
+  ...miscYml,
+  ...qrYml,
   ...startYml,
   // /index
 }

@@ -7,7 +7,6 @@
     "vendor/*"
   ],
   "dependencies": {
-    "react-native-nfc-manager": "^3.15.1",
     "turbo": "^2.0.12"
   },
   "devDependencies": {

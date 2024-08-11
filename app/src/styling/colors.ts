@@ -16,8 +16,13 @@ export const shim = {
 }
 
 export const bg = {
-  dark:  chroma('black'),
+  dark:  chroma('#212121'),
   light: chroma('white'),
+}
+
+export const button = {
+  bg: chroma('#8E8E8E'),
+  fg: chroma('#434343'),
 }
 
 export const fg = {

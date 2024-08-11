@@ -1,7 +1,6 @@
-import { useRouter } from 'expo-router'
 import { useStore } from 'mobx-store'
 import * as React from 'react'
-import { Image, ImageProps, TouchableOpacity } from 'react-native'
+import { Image, ImageProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Center, HBox } from '~/components'
@@ -10,9 +9,7 @@ import { createUseStyles, layout } from '~/styling'
 import { observer } from '~/util'
 import Pop from '../components/Pop'
 
-import 'react-native-reanimated'
-
-export const TabBar = observer('TabBar', () => {
+export const GameStatusBar = observer('GameStatusBar', () => {
 
   const gameStore = useStore(GameStore)
   const safeArea = useSafeAreaInsets()
@@ -22,25 +19,21 @@ export const TabBar = observer('TabBar', () => {
 
   function render() {
     return (
-      <HBox style={[$.TabBar, {paddingBottom}]} justify='space-between'>
-        <TabBarButton
+      <HBox style={[$.GameStatusBar, {paddingBottom}]} justify='space-between'>
+        <GameStatusIndicator
           icon={require('%images/cocktail.png')}
-          href='/cocktail'
           status={gameStore.statuses.cocktail}
         />
-        <TabBarButton
+        <GameStatusIndicator
           icon={require('%images/colander.png')}
-          href='/colander'
           status={gameStore.statuses.colander}
         />
-        <TabBarButton
+        <GameStatusIndicator
           icon={require('%images/crop.png')}
-          href='/crop'
           status={gameStore.statuses.crop}
         />
-        <TabBarButton
+        <GameStatusIndicator
           icon={require('%images/invitation.png')}
-          href='/invitation'
           status={gameStore.statuses.invitation}
         />
       </HBox>
@@ -52,31 +45,23 @@ export const TabBar = observer('TabBar', () => {
 
 })
 
-interface TabBarButtonProps {
+interface GameStatusIndicatorProps {
   icon:    ImageProps['source']
-  href:    string
   status?: GameStatus
 }
 
-const TabBarButton = observer('TabBarButton', (props: TabBarButtonProps) => {
+const GameStatusIndicator = observer('GameStatusIndicator', (props: GameStatusIndicatorProps) => {
 
-  const {icon, href, status} = props
-
-  const router = useRouter()
-  const navigate = React.useCallback(() => {
-    router.push(href)
-  }, [href, router])
+  const {icon, status} = props
 
   const $ = useStyles()
 
   function render() {
     return (
       <Pop in={status !== GameStatus.Unavailable}>
-        <TouchableOpacity onPress={navigate} disabled={status !== GameStatus.Finished}>
-          <Center style={$.TabBarButton}>
-            <Image source={icon}/>
-          </Center>
-        </TouchableOpacity>
+        <Center style={$.GameStatusIndicator}>
+          <Image source={icon}/>
+        </Center>
       </Pop>
     )
   }
@@ -86,11 +71,11 @@ const TabBarButton = observer('TabBarButton', (props: TabBarButtonProps) => {
 })
 
 const useStyles = createUseStyles(theme => ({
-  TabBar: {
+  GameStatusBar: {
     padding: layout.padding.sm,
   },
 
-  TabBarButton: {
+  GameStatusIndicator: {
     width:  76,
     height: 76,
 

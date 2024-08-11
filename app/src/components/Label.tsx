@@ -25,6 +25,7 @@ export interface LabelProps extends TextProps {
   dim?:       boolean
   dimmer?:    boolean
   highlight?: boolean
+  shadow?:    boolean
 
   truncate?:         boolean | 'middle' | 'head' | 'tail' | 'clip'
   allowFontScaling?: boolean
@@ -57,6 +58,7 @@ export const Label = memo('Label', (props: LabelProps) => {
     dim = false,
     dimmer = false,
     highlight = false,
+    shadow = true,
 
     truncate = true,
 
@@ -112,6 +114,7 @@ export const Label = memo('Label', (props: LabelProps) => {
 
       dim && $[`dim-${theme.isDark ? 'dark' : 'light'}`],
       dimmer && $[`dimmer-${theme.isDark ? 'dark' : 'light'}`],
+      shadow && $.shadow,
 
       href != null && [$.link, {textDecorationColor: theme.fg.link.css()}],
       {textAlign: align},
@@ -243,6 +246,9 @@ function parseMarkup(text: string, $: DynamicStyleSheet<any>): MarkupPart[] {
 const useStyles = createUseStyles(theme => ({
   Label: {
     backgroundColor: 'transparent',
+  },
+
+  shadow: {
     ...theme.shadows.depth(1).toStyle(),
   },
 
