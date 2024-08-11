@@ -14,7 +14,7 @@ export const fonts = {
   'body-md': font(fontFaces.sans, 400, 20),
   'body-sm': font(fontFaces.sans, 400, 16, 1.5),
 
-  'alien-lg': font(fontFaces.alien, 700, 30),
+  'alien-lg': font(fontFaces.alien, 700, 41),
   'alien-md': font(fontFaces.alien, 700, 26),
   'alien-sm': font(fontFaces.alien, 700, 22, 1.2),
 }

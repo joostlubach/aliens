@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { SafeAreaView, TouchableWithoutFeedback, View } from 'react-native'
 import Animated, {
   AnimatableValue,
+  FadeIn,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -16,6 +17,7 @@ import { GameName, GameStore, Prompt } from '~/stores'
 import { colors, createUseStyles, fonts, layout } from '~/styling'
 import { observer } from '~/util'
 import { QRScanner } from '../qr/QRScanner'
+import { Typer } from '../typer/Typer'
 import { PromptScreen } from './PromptScreen'
 import { focusedPromptLayout, focusedPromptSize, unfocusedPromptLayout } from './layout'
 
@@ -43,11 +45,7 @@ export const PromptCarousel = observer('PromptCarousel', () => {
   function render() {
     return (
       <SafeAreaView style={$.PromptCarousel}>
-        <TouchableWithoutFeedback onPress={dismiss}>
-          <View style={layout.overlay}/>
-        </TouchableWithoutFeedback>
-
-        <VBox flex>
+        <VBox flex pointerEvents='box-none'>
           {gameStore.visiblePrompts.map((prompt, index) => (
             <PromptCarouselItem
               key={index}
@@ -57,6 +55,12 @@ export const PromptCarousel = observer('PromptCarousel', () => {
               onEvent={handleEvent}
             />
           ))}
+
+          {gameStore.focusedPromptName != null && (
+            <TouchableWithoutFeedback onPress={dismiss}>
+              <Animated.View entering={FadeIn} style={$.shim}/>
+            </TouchableWithoutFeedback>
+          )}
         </VBox>
       </SafeAreaView>
     )
@@ -69,7 +73,7 @@ export const PromptCarousel = observer('PromptCarousel', () => {
 })
 
 interface PromptCarouselItemProps {
-  prompt:  Prompt | '$camera'
+  prompt:  Prompt | '$scanner' | '$typer'
   index:   number
   focused: boolean
 
@@ -149,7 +153,13 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
   // #region Callbacks
 
   const focus = React.useCallback(() => {
-    gameStore.focusOnPrompt(prompt === '$camera' ? '$camera' : prompt.name)
+    if (prompt === '$scanner') {
+      gameStore.focusOnPrompt('$scanner')
+    } else if (prompt === '$typer') {
+      gameStore.focusOnPrompt('$typer')
+    } else {
+      gameStore.focusOnPrompt(prompt.name)
+    }
   }, [gameStore, prompt])
 
   const dismiss = React.useCallback(() => {
@@ -164,7 +174,7 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
 
   function render() {
     return (
-      <Animated.View style={[$.PromptCarouselItem, showFocused ? $.focusedItem : $.unfocusedItem, animatedStyles]}>
+      <Animated.View style={[$.PromptCarouselItem, showFocused ? $.focusedItem : $.unfocusedItem, animatedStyles]} pointerEvents='box-none'>
         <TouchableScale onPress={focus} disabled={focused}>
           {renderContent()}
         </TouchableScale>
@@ -174,10 +184,16 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
   }
 
   function renderContent() {
-    if (prompt === '$camera') {
+    if (prompt === '$scanner') {
       return (
         <QRScanner
           requestDismiss={dismiss}
+          focused={focused}
+        />
+      )
+    } else if (prompt === '$typer') {
+      return (
+        <Typer
           focused={focused}
         />
       )
@@ -212,8 +228,10 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
       <Animated.View style={[$.itemCaptionContainer, {opacity: captionOpacity}]}>
         <View style={[$.itemCaption, captionStyle]}>
           <Label style={labelStyle} font='body-sm' align='center'>
-            {prompt === '$camera' ? (
+            {prompt === '$scanner' ? (
               t('qr:title')
+            ) : prompt === '$typer' ? (
+              t('typer:title')
             ) : (
               t(`${prompt.name}:title`)
             )}
@@ -250,8 +268,14 @@ const useStyles = createUseStyles({
     zIndex: 0,
   },
 
+  shim: {
+    ...layout.overlay,
+    zIndex:          1,
+    backgroundColor: colors.black.alpha(0.4),
+  },
+
   focusedItem: {
-    zIndex: 1,
+    zIndex: 2,
   },
 
   itemCaptionContainer: {

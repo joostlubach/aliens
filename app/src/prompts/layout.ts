@@ -1,4 +1,4 @@
-import { layout } from '~/styling'
+import { fonts, layout } from '~/styling'
 
 const columnCount = 4
 const promptGap = layout.padding.md
@@ -25,9 +25,13 @@ export function unfocusedPromptLayout(index: number) {
   const column = index % columnCount
   const row = Math.floor(index / columnCount)
 
+  const captionSpace = fonts['title-sm'].size + layout.padding.inline.sm
+  const width = unfocusedPromptWidth + promptGap
+  const height = unfocusedPromptWidth / focusedPromptSize.width * focusedPromptSize.height + promptGap + captionSpace
+
   return {
-    left:  promptGap + column * (unfocusedPromptWidth + promptGap),
-    top:   promptGap + row * (unfocusedPromptWidth / focusedPromptSize.width * focusedPromptSize.height + promptGap),
+    left:  promptGap + column * width,
+    top:   promptGap + row * height,
     scale: unfocusedPromptScale,
   }
 }

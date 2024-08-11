@@ -3,6 +3,7 @@ import { StyleProp, StyleSheet, View, ViewProps, ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { forwardRef } from 'react-util'
 import { Insets } from 'ytil'
+
 import { layout } from '~/styling'
 import { FlexProp, flexStyle } from './util'
 
@@ -47,7 +48,7 @@ const VBox = forwardRef('VBox', (props: Props, ref: React.Ref<View>) => {
     $[align ?? 'stretch'],
     $[justify ?? 'top'],
     flexStyle(flex),
-    {padding},
+    {padding, gap},
     style,
   ]
 
@@ -69,20 +70,11 @@ const VBox = forwardRef('VBox', (props: Props, ref: React.Ref<View>) => {
       padding.paddingRight = insets.right
     }
     return padding
-  }, [])
+  }, [insets.bottom, insets.left, insets.right, insets.top, safeArea])
 
   let count = 0
   return (
-    <View style={[styles, safeAreaPadding]} ref={ref} {...rest}>
-      {React.Children.map(props.children, child => (
-        child && (
-          <>
-            {count++ > 0 && gap != null && <View style={{height: gap}}/>}
-            {child}
-          </>
-        )
-      ))}
-    </View>
+    <View style={[styles, safeAreaPadding]} ref={ref} {...rest}/>
   )
 
 })

@@ -15,7 +15,7 @@ export const AlienLabel = memo('AlienLabel', (props: AlienLabelProps) => {
 
   const [visible, show, hide] = useBoolean(true)
 
-  const variant = React.useMemo(() => visible ? 'body' : 'alien', [visible])
+  const variant = React.useMemo(() => visible ? 'alien' : 'body', [visible])
   const font = React.useMemo(() => `${variant}-${size}` as const, [variant, size])
 
   const sequenceTimer = useTimer()
@@ -45,7 +45,7 @@ export const AlienLabel = memo('AlienLabel', (props: AlienLabelProps) => {
     <Label
       {...rest}
       font={font}
-      style={{letterSpacing: letterSpacings[variant]}}
+      style={[{letterSpacing: letterSpacings[variant]}, rest.style]}
     />
   )
 })

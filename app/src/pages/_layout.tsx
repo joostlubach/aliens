@@ -51,6 +51,7 @@ const RootLayout = observer('RootLayout', () => {
         <Center position={{left: 10, top: 10}}>
           <Image
             source={require('%images/homeart1.png')}
+            style={{opacity: 0.5}}
           />
         </Center>
         <Center position={{bottom: -60, right: 0}}>

@@ -1,27 +1,26 @@
 {
   "expo": {
-    "name": "Aliens",
-    "slug": "aliens",
+    "name": "The Joining",
+    "slug": "the-joining",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "co.mosdev.aliens",
+    "icon": "./assets/images/appicon-ios.png",
+    "scheme": "co.mosdev.joining",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "co.mosdev.aliens"
+      "bundleIdentifier": "co.mosdev.TheJoining"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/appicon-fg.png",
+        "backgroundImage": "./assets/images/appicon-bg.png"
       },
-      "package": "co.mosdev.aliens"
+      "package": "co.mosdev.the_joining"
     },
     "web": {
       "bundler": "metro",

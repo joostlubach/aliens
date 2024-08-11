@@ -1,6 +1,5 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { config } from '~/config'
 import { GameName, GameStatus, Prompt, PromptKey, prompts, QRParser, Trigger } from './game'
 
 export class GameStore {
@@ -14,35 +13,37 @@ export class GameStore {
   @observable
   public visiblePromptNames = new Set<PromptKey>(['start'])
 
-  @observable
-  public cameraVisible: boolean = false
-
   @computed
-  public get visiblePrompts(): Array<Prompt | '$camera'> {
+  public get visiblePrompts(): Array<Prompt | '$scanner' | '$typer'> {
     return [
       ...prompts.filter(it => this.visiblePromptNames.has(it.name)),
-      ...this.cameraVisible ? ['$camera'] as const : [],
+      ...this.visiblePromptNames.has('$scanner') ? ['$scanner'] as const : [],
+      ...this.visiblePromptNames.has('$typer') ? ['$typer'] as const : [],
     ]
   }
 
   @observable
-  public focusedPromptName: PromptKey | null = config.environment === 'development' ? null : 'start'
+  public focusedPromptName: PromptKey | null = null
 
   @computed
   public get focusedPrompt() {
     if (this.focusedPromptName == null) { return null }
     return this.visiblePrompts.find(prompt => {
-      if (prompt === '$camera') {
-        return this.focusedPromptName === '$camera'
+      if (prompt === '$scanner') {
+        return this.focusedPromptName === '$scanner'
+      } else if (prompt === '$typer') {
+        return this.focusedPromptName === '$typer'
       } else {
         return prompt.name === this.focusedPromptName
       }
     })
   }
 
-  public isPromptFocused(prompt: Prompt | '$camera') {
-    if (prompt === '$camera') {
-      return this.focusedPromptName === '$camera'
+  public isPromptFocused(prompt: Prompt | '$scanner' | '$typer') {
+    if (prompt === '$scanner') {
+      return this.focusedPromptName === '$scanner'
+    } else if (prompt === '$typer') {
+      return this.focusedPromptName === '$typer'
     } else {
       return this.focusedPromptName === prompt.name
     }
@@ -64,17 +65,31 @@ export class GameStore {
 
   @action
   public showCamera() {
-    this.cameraVisible = true
+    this.visiblePromptNames.add('$scanner')
   }
 
   @action
   public hideCamera() {
-    this.cameraVisible = false
+    this.visiblePromptNames.delete('$scanner')
   }
 
   // #endregion
 
   // #region Games
+
+  @action
+  public start(dev: boolean = false) {
+    if (dev) {
+      // Append all prompts.
+      for (const prompt of prompts) {
+        this.appendPrompt(prompt.name, false)
+      }
+      this.appendPrompt('$scanner', false)
+      this.appendPrompt('$typer', false)
+    } else {
+      this.appendPrompt('start')
+    }
+  }
   
   @observable
   public statuses: Record<GameName, GameStatus> = {

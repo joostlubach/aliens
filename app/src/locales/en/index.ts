@@ -7,6 +7,7 @@ import invitationYml from './invitation.yml.json'
 import miscYml from './misc.yml.json'
 import qrYml from './qr.yml.json'
 import startYml from './start.yml.json'
+import typerYml from './typer.yml.json'
 // /index
 
 const en = {
@@ -19,6 +20,7 @@ const en = {
   ...miscYml,
   ...qrYml,
   ...startYml,
+  ...typerYml,
   // /index
 }
 export default en

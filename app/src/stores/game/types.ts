@@ -1,6 +1,6 @@
 import { games, prompts } from './data'
 
-export type PromptKey = (typeof prompts[number])['name'] | '$camera'
+export type PromptKey = (typeof prompts[number])['name'] | '$scanner' | '$typer'
 
 export interface Prompt {
   name:       PromptKey
