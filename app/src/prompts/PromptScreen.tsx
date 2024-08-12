@@ -7,7 +7,7 @@ import { usePrevious } from 'react-util/hooks'
 
 import { Button, Center, TypingLabel, VBox } from '~/components'
 import { useImageFlicker } from '~/hooks'
-import { AudioStore } from '~/stores'
+import { AudioStore, LetterStore } from '~/stores'
 import { createUseStyles, layout } from '~/styling'
 import { observer } from '~/util'
 import Pulsate from '../components/Pulsate'
@@ -48,6 +48,7 @@ export const PromptScreen = observer('PromptScreen', (props: PromptScreenProps) 
   const scrollViewRef = React.useRef<ScrollView>(null)
 
   const audioStore = useStore(AudioStore)
+  const letterStore = useStore(LetterStore)
 
   const [currentParagraphIndex, setCurrentParagraphIndex] = React.useState<number>(0)
 
@@ -172,7 +173,7 @@ export const PromptScreen = observer('PromptScreen', (props: PromptScreenProps) 
             <TypingLabel
               ref={typingLabelRef}
               key={index}
-              children={paragraph}
+              children={letterStore.unmaskAlienLettersInAlienParts(paragraph)}
               onTypingEnd={handleTypingEnd}
               font='body-sm'
               sound={sound ? audioStore.sound('alien') ?? undefined : undefined}

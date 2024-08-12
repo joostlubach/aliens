@@ -3,7 +3,7 @@ import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { AlienLabel, Button, VBox } from '~/components'
+import { AlienFlashLabel, Button, VBox } from '~/components'
 import { config } from '~/config'
 import { GameStore } from '~/stores'
 import { fonts, layout } from '~/styling'
@@ -18,7 +18,7 @@ const Index = observer('Index', () => {
 
   const startGame = React.useCallback(() => {
     gameStore.start(config.environment === 'development')
-    router.push('/invitation')
+    router.push('/game')
   }, [gameStore, router])
 
   React.useEffect(() => {
@@ -31,9 +31,9 @@ const Index = observer('Index', () => {
     return (
       <VBox flex>
         <VBox flex justify='middle' style={layout.overlay}>
-          <AlienLabel style={{marginTop: -fonts['alien-lg'].size - 4}} align='center' size='lg'>
+          <AlienFlashLabel style={{marginTop: -fonts['alien-lg'].size - 4}} align='center' size='lg'>
             DE BRUILOFT
-          </AlienLabel>
+          </AlienFlashLabel>
         </VBox>
         <VBox flex justify='space-around' padding={layout.padding.md}>
           <VBox/>

@@ -41,7 +41,7 @@ export function getTextStyle(spec: FontSpec): TextStyle {
 
 export function textOffset(font: FontSpec) {
   if (font.family === 'Futura') {
-    return {x: 0.2 * font.size, y: 0}
+    return {x: 0, y: 0}
   } else {
     return {x: 0, y: 0}
   }

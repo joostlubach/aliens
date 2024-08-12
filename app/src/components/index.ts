@@ -1,4 +1,5 @@
 // @index: export * from ${relpath}
+export * from './AlienFlashLabel'
 export * from './AlienLabel'
 export * from './Button'
 export * from './Icon'

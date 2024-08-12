@@ -1,7 +1,7 @@
 import React from 'react'
 import { memo } from 'react-util'
 
-import { Center, Label } from '~/components'
+import { AlienLabel, Center } from '~/components'
 import { colors, createUseStyles, layout } from '~/styling'
 import { wordHeight } from './layout'
 
@@ -20,9 +20,9 @@ export const Word = memo('Word', (props: WordProps) => {
   function render() {
     return (
       <Center style={$.Word}>
-        <Label font='alien-sm' shadow={false} color={colors.black}>
+        <AlienLabel shadow={false} color={colors.black}>
           {word}
-        </Label>
+        </AlienLabel>
       </Center>
     )
   }

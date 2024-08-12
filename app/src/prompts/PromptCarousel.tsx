@@ -13,7 +13,7 @@ import { memo } from 'react-util'
 import { usePrevious } from 'react-util/hooks'
 
 import { Label, TouchableScale, VBox } from '~/components'
-import { GameName, GameStore, Prompt } from '~/stores'
+import { GameName, GameStore, LetterStore, Prompt } from '~/stores'
 import { colors, createUseStyles, fonts, layout } from '~/styling'
 import { observer } from '~/util'
 import { QRScanner } from '../qr/QRScanner'
@@ -23,6 +23,7 @@ import { focusedPromptLayout, focusedPromptSize, unfocusedPromptLayout } from '.
 export const PromptCarousel = observer('PromptCarousel', () => {
 
   const gameStore = useStore(GameStore)
+  const letterStore = useStore(LetterStore)
 
   const handleEvent = React.useCallback((event: string) => {
     if (event === 'camera') {
