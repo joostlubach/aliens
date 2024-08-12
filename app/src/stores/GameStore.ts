@@ -98,6 +98,91 @@ export class GameStore {
     this.statuses[game] = GameStatus.Available
   }
 
+  @action
+  private startGame(game: GameName): boolean {
+    if (this.statuses[game] === GameStatus.Unavailable) { return false }
+    if (this.statuses[game] === GameStatus.Complete) { return false }
+    
+    this.statuses[game] = GameStatus.Available
+    this.appendPrompt(`${game}:start`)
+    return true
+  }
+
+  @action
+  private completeGame(game: GameName): boolean {
+    if (this.statuses[game] !== GameStatus.Available) { return false }
+    
+    this.statuses[game] = GameStatus.Complete
+    this.appendPrompt(`${game}:complete`)
+    return true
+  }
+
+  // #endregion
+
+  // #region Invitation & letters
+
+  @observable
+  public invitationWords: string[] = []
+  
+  @computed
+  public get availableInvitationWords() {
+    return invitationWords.filter(word => !this.invitationWords.includes(word))
+  }
+
+  @action
+  public setInvitationWords(words: string[]) {
+    this.invitationWords = words
+  }
+
+  @action
+  public addWordToEnd(word: string) {
+    const next = [...this.invitationWords].filter(it => it !== word)
+    next.push(word)
+    this.invitationWords = next
+  }
+
+  @observable
+  public unlockedLetters = new Set<string>([])
+
+  @action
+  public unlockLetter(letter: string) {
+    if (this.unlockedLetters.has(letter)) {
+      return false
+    }
+    
+    this.unlockedLetters.add(letter)
+    return true
+  }
+
+  public unmaskAlienLetters(text: string) {
+    let markup = ''
+
+    let alien: boolean = false
+    let piece: string = ''
+
+    for (const char of text.split('')) {
+      const letter = char.toUpperCase()
+      const nextAlien = !this.unlockedLetters.has(letter)
+
+      if (alien === nextAlien) {
+        piece += letter
+      } else {
+        markup += alien ? `|${piece}|` : piece
+        alien = nextAlien
+        piece = letter
+      }
+    }
+
+    markup += alien ? `|${piece}|` : piece
+    return markup
+  }
+
+  public unmaskAlienLettersInAlienParts(text: string) {
+    return text.split('|').map((part, index) => {
+      return index % 2 === 0 ? part : this.unmaskAlienLetters(part)
+    }).join('')
+  }
+
   // #endregion
 
   // #region QR
@@ -121,54 +206,14 @@ export class GameStore {
       return this.completeGame(trigger.game)
 
     case 'letter':
-      // TODO
-      // this.alienLetterStore.markLetterFound(trigger.letter)
-      return true
+      return this.unlockLetter(trigger.letter)
 
     default:
       return false
     }
   }
 
-  private startGame(game: GameName): boolean {
-    if (this.statuses[game] === GameStatus.Unavailable) { return false }
-    if (this.statuses[game] === GameStatus.Complete) { return false }
-    
-    this.statuses[game] = GameStatus.Available
-    this.appendPrompt(`${game}:start`)
-    return true
-  }
-
-  private completeGame(game: GameName): boolean {
-    if (this.statuses[game] !== GameStatus.Available) { return false }
-    
-    this.statuses[game] = GameStatus.Complete
-    this.appendPrompt(`${game}:complete`)
-    return true
-  }
-
   // #endregion
-
-
-  @observable
-  public invitationWords: string[] = []
-  
-  @computed
-  public get availableInvitationWords() {
-    return invitationWords.filter(word => !this.invitationWords.includes(word))
-  }
-
-  @action
-  public setInvitationWords(words: string[]) {
-    this.invitationWords = words
-  }
-
-  @action
-  public addWordToEnd(word: string) {
-    const next = [...this.invitationWords].filter(it => it !== word)
-    next.push(word)
-    this.invitationWords = next
-  }
 
 }
 

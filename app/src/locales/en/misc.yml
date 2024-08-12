@@ -1,2 +1,6 @@
+game:
+  start: start
+  complete: complete
+
 buttons:
   dismiss: DISMISS

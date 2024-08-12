@@ -1,7 +1,7 @@
 import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { SafeAreaView, TouchableWithoutFeedback, View } from 'react-native'
+import { Image, SafeAreaView, TouchableWithoutFeedback, View } from 'react-native'
 import Animated, {
   AnimatableValue,
   FadeIn,
@@ -12,8 +12,8 @@ import Animated, {
 import { memo } from 'react-util'
 import { usePrevious } from 'react-util/hooks'
 
-import { Label, TouchableScale, VBox } from '~/components'
-import { GameName, GameStore, LetterStore, Prompt } from '~/stores'
+import { HBox, Label, TouchableScale, VBox } from '~/components'
+import { GameName, GameStore, Prompt } from '~/stores'
 import { colors, createUseStyles, fonts, layout } from '~/styling'
 import { observer } from '~/util'
 import { QRScanner } from '../qr/QRScanner'
@@ -23,7 +23,6 @@ import { focusedPromptLayout, focusedPromptSize, unfocusedPromptLayout } from '.
 export const PromptCarousel = observer('PromptCarousel', () => {
 
   const gameStore = useStore(GameStore)
-  const letterStore = useStore(LetterStore)
 
   const handleEvent = React.useCallback((event: string) => {
     if (event === 'camera') {
@@ -211,24 +210,47 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
       paddingHorizontal: layout.padding.inline.sm / itemLayout.scale,
       paddingVertical:   1 / itemLayout.scale,
     }
+
+    return (
+      <Animated.View style={[$.itemCaptionContainer, {opacity: captionOpacity}]}>
+        <View style={[$.itemCaption, captionStyle]}>
+          {renderCaptionContent()}
+        </View>
+      </Animated.View>
+    )
+  }
+
+  function renderCaptionContent() {
     const labelStyle = {
       fontSize:   fonts['title-sm'].size / itemLayout.scale,
       lineHeight: fonts['title-sm'].size / itemLayout.scale * fonts['title-sm'].lineHeight,
     }
 
-    return (
-      <Animated.View style={[$.itemCaptionContainer, {opacity: captionOpacity}]}>
-        <View style={[$.itemCaption, captionStyle]}>
-          <Label style={labelStyle} font='body-sm' align='center'>
-            {prompt === '$scanner' ? (
-              t('qr:title')
-            ) : (
-              t(`${prompt.name}:title`)
-            )}
-          </Label>
-        </View>
-      </Animated.View>
-    )
+    if (prompt === '$scanner' || !prompt.name.match(/^.*:.*$/)) {
+      return (
+        <Label style={labelStyle} font='body-sm' align='center'>
+          {prompt === '$scanner' ? t('qr:title') : t(`${prompt.name}:title`)}
+        </Label>
+      )
+    } else {
+      const match = prompt.name.match(/^(.*):(.*)$/)
+      if (match == null) { return null }
+
+      return (
+        <HBox gap={layout.padding.inline.sm}>
+          <Image
+            source={gameIcons[match[1] as GameName]}
+            resizeMode='contain'
+            style={{width: 20 / itemLayout.scale, height: 20 / itemLayout.scale}}
+          />
+          {match[2] === 'complete' && (
+            <Label style={labelStyle} font='body-sm'>
+              {t(`game:complete`)}
+            </Label>
+          )}
+        </HBox>
+      )
+    }
   }
 
   // #endregion
@@ -236,6 +258,13 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
   return render()
 
 })
+
+const gameIcons = {
+  cocktail:   require('%images/cocktail.png'),
+  colander:   require('%images/colander.png'),
+  crop:       require('%images/crop.png'),
+  invitation: require('%images/invitation.png'),
+}
 
 function withCarouselSpring<T extends AnimatableValue>(value: T): T {
   return withSpring(value, {

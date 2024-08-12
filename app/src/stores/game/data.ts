@@ -75,4 +75,8 @@ export const triggers: Trigger[] = [{
   key:  '2b73ef1c-c5b7-4d2a-9a49-2e3008b04162',
   type: 'game:complete',
   game: 'invitation',
-}]
+}, {
+  key:    'b7c3a1a1-2d7f-4b9c-9b5b-6b6b3b1c8f5e',
+  type:   'letter',
+  letter: 'A',
+}] as const
