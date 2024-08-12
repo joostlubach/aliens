@@ -3,15 +3,15 @@ import { memo } from 'react-util'
 
 import { Center, Label } from '~/components'
 import { colors, createUseStyles, layout } from '~/styling'
+import { wordHeight } from './layout'
 
 export interface WordProps {
-  text: string
-  
+  word: string
 }
 
 export const Word = memo('Word', (props: WordProps) => {
 
-  const {text} = props
+  const {word} = props
 
   // #region Rendering
 
@@ -21,7 +21,7 @@ export const Word = memo('Word', (props: WordProps) => {
     return (
       <Center style={$.Word}>
         <Label font='alien-sm' shadow={false} color={colors.black}>
-          {text}
+          {word}
         </Label>
       </Center>
     )
@@ -37,7 +37,9 @@ export default Word
 
 const useStyles = createUseStyles({
   Word: {
-    paddingVertical:   layout.padding.inline.sm,
+    height: wordHeight,
+
+    paddingVertical:   layout.padding.inline.xs,
     paddingHorizontal: layout.padding.inline.md,
 
     backgroundColor: colors.white,

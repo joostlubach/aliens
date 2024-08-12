@@ -14,11 +14,10 @@ export class GameStore {
   public visiblePromptNames = new Set<PromptKey>(['start'])
 
   @computed
-  public get visiblePrompts(): Array<Prompt | '$scanner' | '$typer'> {
+  public get visiblePrompts(): Array<Prompt | '$scanner'> {
     return [
       ...prompts.filter(it => this.visiblePromptNames.has(it.name)),
       ...this.visiblePromptNames.has('$scanner') ? ['$scanner'] as const : [],
-      ...this.visiblePromptNames.has('$typer') ? ['$typer'] as const : [],
     ]
   }
 
@@ -31,19 +30,15 @@ export class GameStore {
     return this.visiblePrompts.find(prompt => {
       if (prompt === '$scanner') {
         return this.focusedPromptName === '$scanner'
-      } else if (prompt === '$typer') {
-        return this.focusedPromptName === '$typer'
       } else {
         return prompt.name === this.focusedPromptName
       }
     })
   }
 
-  public isPromptFocused(prompt: Prompt | '$scanner' | '$typer') {
+  public isPromptFocused(prompt: Prompt | '$scanner') {
     if (prompt === '$scanner') {
       return this.focusedPromptName === '$scanner'
-    } else if (prompt === '$typer') {
-      return this.focusedPromptName === '$typer'
     } else {
       return this.focusedPromptName === prompt.name
     }
@@ -85,7 +80,6 @@ export class GameStore {
         this.appendPrompt(prompt.name, false)
       }
       this.appendPrompt('$scanner', false)
-      this.appendPrompt('$typer', false)
     } else {
       this.appendPrompt('start')
     }
@@ -155,7 +149,30 @@ export class GameStore {
 
   // #endregion
 
+
+  @observable
+  public invitationWords: string[] = []
+  
+  @computed
+  public get availableInvitationWords() {
+    return invitationWords.filter(word => !this.invitationWords.includes(word))
+  }
+
+  @action
+  public setInvitationWords(words: string[]) {
+    this.invitationWords = words
+  }
+
+  @action
+  public addWordToEnd(word: string) {
+    const next = [...this.invitationWords].filter(it => it !== word)
+    next.push(word)
+    this.invitationWords = next
+  }
+
 }
+
+const invitationWords = ['DEAR', 'GUEST', 'PLEASE', 'COME', 'TO', 'OUR', "OVERLORD'S", 'JOINING']
 
 export enum ProcessQRResult {
   Success,

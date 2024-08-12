@@ -17,7 +17,6 @@ import { GameName, GameStore, Prompt } from '~/stores'
 import { colors, createUseStyles, fonts, layout } from '~/styling'
 import { observer } from '~/util'
 import { QRScanner } from '../qr/QRScanner'
-import { Typer } from '../typer/Typer'
 import { PromptScreen } from './PromptScreen'
 import { focusedPromptLayout, focusedPromptSize, unfocusedPromptLayout } from './layout'
 
@@ -73,7 +72,7 @@ export const PromptCarousel = observer('PromptCarousel', () => {
 })
 
 interface PromptCarouselItemProps {
-  prompt:  Prompt | '$scanner' | '$typer'
+  prompt:  Prompt | '$scanner'
   index:   number
   focused: boolean
 
@@ -155,8 +154,6 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
   const focus = React.useCallback(() => {
     if (prompt === '$scanner') {
       gameStore.focusOnPrompt('$scanner')
-    } else if (prompt === '$typer') {
-      gameStore.focusOnPrompt('$typer')
     } else {
       gameStore.focusOnPrompt(prompt.name)
     }
@@ -188,12 +185,6 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
       return (
         <QRScanner
           requestDismiss={dismiss}
-          focused={focused}
-        />
-      )
-    } else if (prompt === '$typer') {
-      return (
-        <Typer
           focused={focused}
         />
       )
@@ -230,8 +221,6 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
           <Label style={labelStyle} font='body-sm' align='center'>
             {prompt === '$scanner' ? (
               t('qr:title')
-            ) : prompt === '$typer' ? (
-              t('typer:title')
             ) : (
               t(`${prompt.name}:title`)
             )}

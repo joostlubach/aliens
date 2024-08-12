@@ -18,13 +18,14 @@ const Index = observer('Index', () => {
 
   const startGame = React.useCallback(() => {
     gameStore.start(config.environment === 'development')
-    router.push('/game')
+    router.push('/invitation')
   }, [gameStore, router])
 
-  const startGameDev = React.useCallback(() => {
-    gameStore.start(true)
-    router.push('/game')
-  }, [gameStore, router])
+  React.useEffect(() => {
+    setTimeout(() => {
+      startGame()
+    }, 0)
+  }, [startGame])
 
   function render() {
     return (
