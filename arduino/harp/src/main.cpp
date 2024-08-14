@@ -1,52 +1,117 @@
-#include <Adafruit_GFX.h>
-#include <Adafruit_ILI9341.h>
-#include <SPI.h>
+#include <Arduino.h>
 
-#include "harp.h"
+#include "keypad_setup.h"
+#include "lasers.h"
+#include "sensors.h"
+#include "sound.h"
+#include "code.h"
+#include "display.h"
 
-// Definieer de pinnen
-#define TFT_CS     5
-#define TFT_RST    17
-#define TFT_DC     16
-#define TFT_LED    4
-#define TFT_MOSI   23
-#define TFT_CLK    18
-#define TFT_MISO   -1  // Niet nodig voor dit display
+#define TEST_SOUND 0
 
-// Maak een object voor het scherm aan
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
+const Note melody[] = {G, C, C, C, G, D, B, C};
+const int melodyLength = sizeof(melody) / sizeof(melody[0]);
+
+bool started = false;
+int melodyIndex = 0;
+
+void startGame();
+void onNotePlayed(Note note);
+void onGameComplete();
+void reset();
 
 void setup() {
-  // Start de seriële communicatie voor debugging
   Serial.begin(115200);
+  Serial.println("-------- START --------");
 
-  pinMode(TFT_LED, OUTPUT);
-  digitalWrite(TFT_LED, HIGH);
+  setupDisplay();
+  setupKeypad();
+  setupLasers();
+  setupSensors();
+  setupSound();
 
-  // Initialiseer het display
-  tft.begin();
-
-  tft.drawRGBBitmap(0, 0, harp, HARP_WIDTH, HARP_HEIGHT);
+  reset();
+  Serial.println("Laser harp ready");
 }
 
 void loop() {
-  tft.writeCommand(ILI9341_DISPOFF);
-  tft.writeCommand(ILI9341_SLPIN);
-  digitalWrite(TFT_LED, LOW);
-  delay(5000);
+  char digit = keypad.getKey();
+  if (digit != NO_KEY) {
+    #if TEST_SOUND
+    if (digit >= '0' && digit <= '9') {
+      playSound(digit - '0');
+    }
+    #else
+    DigitResult result = digitEntered(digit);
+    if (!started) {
+      String code = getCode();
+      printCode(code);
+    }
+  
+    if (result == DigitResult::RESET) {
+      Serial.println("RESET");
+      reset();
+    } else if (!started && result == DigitResult::INVALID_INPUT) {
+      playErrorBeep();
+      flashDisplay();
+      resetCode();
+      printCode("****");
+    } else if (!started && result == DigitResult::CORRECT_CODE) {
+      startGame();
+      resetCode();
+    }
+    #endif
+  }
 
-  tft.writeCommand(ILI9341_SLPOUT);
-  tft.writeCommand(ILI9341_DISPON);
-  digitalWrite(TFT_LED, HIGH);
-  delay(5000);
+  if (started) {
+    for (Note note : checkNotes()) {
+      onNotePlayed(note);
+    }
+  }
 
-  // tft.fillRect(0, 164, BACKGROUND_WIDTH, 72, ILI9341_WHITE);
-  // tft.fillRect(12, 164, BACKGROUND_WIDTH - 2 * 12, 1, ILI9341_BLACK);
-  // tft.fillRect(12, 182, BACKGROUND_WIDTH - 2 * 12, 1, ILI9341_DARKGREY);
-  // tft.fillRect(12, 200, BACKGROUND_WIDTH - 2 * 12, 1, ILI9341_DARKGREY);
-  // tft.fillRect(12, 218, BACKGROUND_WIDTH - 2 * 12, 1, ILI9341_DARKGREY);
-  // tft.fillRect(12, 236, BACKGROUND_WIDTH - 2 * 12, 1, ILI9341_DARKGREY);
+  delay(50);
+}
 
-  // tft.drawRGBBitmap(0, 164, notes, NOTES_WIDTH, NOTES_HEIGHT);
+void startGame() {
+  started = true;
+  Serial.println("Game started!");
+  playOpeningTune();
+  showHarp();
+  turnOnAllLasers(100);
+  enableSensors();
+}
 
+void onNotePlayed(Note note) {
+  Serial.printf("NOTE: %d\n", note);
+  playNote(note);
+
+  if (note == melody[melodyIndex]) {
+    melodyIndex++;
+    if (melodyIndex == melodyLength) {
+      onGameComplete();
+      melodyIndex = 0;
+    }
+  } else {
+    reset();
+    melodyIndex = 0;
+  }
+}
+
+void onGameComplete() {
+  Serial.println("Melody complete");
+
+  // Wait for the last note to finish playing.
+  delay(800);
+
+  playVictoryTune();
+  victoryDemo();
+}
+
+void reset() {
+  melodyIndex = 0;
+  started = false;
+  stopPlayback();
+  disableSensors();
+  resetCode();
+  printCode("****");
 }
