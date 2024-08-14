@@ -1,8 +1,12 @@
+import { useRouter } from 'expo-router'
 import { useStore } from 'mobx-store'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTimer } from 'react-timer'
 
-import { Center, HBox, VBox } from '~/components'
+import { Button, Center, HBox, VBox } from '~/components'
 import { DragDropMonitor } from '~/invitation/DragDropMonitor'
 import { DragLayer } from '~/invitation/DragLayer'
 import { DraggableWord } from '~/invitation/DraggableWord'
@@ -20,6 +24,37 @@ const Invitation = observer('Invitation', () => {
   )
 
   const gameStore = useStore(GameStore)
+  const [t] = useTranslation()
+  const safeArea = useSafeAreaInsets()
+
+  const router = useRouter()
+  const backToGame = React.useCallback(() => {
+    router.back()
+  }, [router])
+
+  const [showCross, setShowCross] = React.useState<boolean>(false)
+  const crossTimer = useTimer()
+
+  const flashCross = React.useCallback(() => {
+    crossTimer.clearAll()
+    crossTimer.setTimeout(() => setShowCross(true), 0)
+    crossTimer.setTimeout(() => setShowCross(false), 300)
+    crossTimer.setTimeout(() => setShowCross(true), 800)
+    crossTimer.setTimeout(() => setShowCross(false), 1100)
+    
+    return () => {
+      crossTimer.clearAll()
+    }
+  }, [crossTimer])
+
+  const checkInvitation = React.useCallback(() => {
+    if (gameStore.isInvitationCorrect) {
+      gameStore.completeGame('invitation')
+      router.back()
+    } else {
+      flashCross()
+    }
+  }, [flashCross, gameStore, router])
 
   // #region Rendering
 
@@ -36,9 +71,19 @@ const Invitation = observer('Invitation', () => {
             />
           </Center>
           {renderPage()}
+          {renderCheckButton()}
           {renderWords()}
         </VBox>
         <DragLayer dd={dd}/>
+
+        <Center style={[$.back, {paddingTop: safeArea.top + layout.padding.sm}]}>
+          <Button onPress={backToGame}>
+            <Image
+              source={require('%images/back.png')}
+              style={{width: 44, height: 10}}
+            />
+          </Button>
+        </Center>
       </VBox>
     )
   }
@@ -49,14 +94,35 @@ const Invitation = observer('Invitation', () => {
         <InvitationPage
           dd={dd}
         />
+        {showCross && (
+          <Center style={$.cross}>
+            <Image
+              source={require('%images/cross.png')}
+              style={{width: 333, height: 276}}
+            />
+          </Center>
+        )}
       </VBox>
+    )
+  }
+
+  function renderCheckButton() {
+    return (
+      <Center style={$.check}>
+        {gameStore.maySubmitInvitation && (
+          <Button
+            onPress={checkInvitation}
+            caption={t('check')}
+          />
+        )}
+      </Center>
     )
   }
 
   function renderWords() {
     return (
       <HBox wrap style={$.availableWords} gap={layout.padding.sm} justify='center'>
-        {gameStore.availableInvitationWords.map(word => (
+        {gameStore.remainingInvitationWords.map(word => (
           <DraggableWord
             key={word}
             word={word}
@@ -86,14 +152,31 @@ const useStyles = createUseStyles({
 
   pageContainer: {
     position: 'absolute',
-    left:     21,
-    right:    21,
-    top:      39,
+    left:     24,
+    right:    24,
+    top:      68,
     bottom:   275,
+  },
+
+  check: {
+    position: 'absolute',
+    bottom:   196,
+    right:    26,
   },
 
   availableWords: {
     height:  40 * 3 + 2 * layout.padding.sm,
     padding: layout.padding.md,
+  },
+
+  cross: {
+    ...layout.overlay,
+  },
+
+  back: {
+    position: 'absolute',
+    left:     0,
+    top:      0,
+    padding:  layout.padding.sm,
   },
 })

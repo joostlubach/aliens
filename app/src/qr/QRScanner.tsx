@@ -2,10 +2,12 @@ import { BarcodeScanningResult, CameraView } from 'expo-camera'
 import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, Linking, View } from 'react-native'
+import { Image, Linking, TouchableWithoutFeedback, View } from 'react-native'
+import Animated, { ZoomIn } from 'react-native-reanimated'
+import { useBoolean } from 'react-util/hooks'
 
 import { Button, Center, Label, VBox } from '~/components'
-import { GameStore, QRStore } from '~/stores'
+import { GameStore, QRStore, Trigger } from '~/stores'
 import { colors, createUseStyles, layout } from '~/styling'
 import { observer } from '~/util'
 import { focusedPromptSize } from '../prompts/layout'
@@ -25,6 +27,8 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
   const qrStore = useStore(QRStore)
   const gameStore = useStore(GameStore)
   const {hasPermission, ensurePermission} = qrStore
+
+  const [triggerListOpen, openTriggerList, closeTriggerList] = useBoolean()
 
   const [t] = useTranslation('qr')
 
@@ -46,6 +50,11 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
     gameStore.processQR(result.data)
   }
 
+  const handleTriggerPress = React.useCallback((trigger: Trigger) => {
+    gameStore.executeTrigger(trigger)
+    closeTriggerList()
+  }, [closeTriggerList, gameStore])
+
   // #region Rendering
 
   const $ = useStyles()
@@ -63,6 +72,7 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
         ) : (
           renderCameraView()
         )}
+        {triggerListOpen && renderTriggerList()}
       </View>
     )
   }
@@ -113,6 +123,9 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
           style={$.frame}
           source={require('%images/camera.png')}
         />
+        <TouchableWithoutFeedback onLongPress={openTriggerList}>
+          <View style={$.triggerButton}/>
+        </TouchableWithoutFeedback>
         {focused && (
           <VBox style={$.dismiss}>
             <Button
@@ -123,6 +136,26 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
           </VBox>
         )}
       </>
+    )
+  }
+
+  function renderTriggerList() {
+    return (
+      <Animated.View style={$.triggerList} entering={ZoomIn}>
+        {gameStore.triggers.map(renderTriggerButton)}
+      </Animated.View>
+    )
+  }
+
+  function renderTriggerButton(trigger: Trigger) {
+    if (trigger.type === 'letter') { return null }
+
+    return (
+      <Button
+        key={trigger.key}
+        caption={trigger.type + ' ' + trigger.game}
+        onPress={handleTriggerPress.bind(null, trigger)}
+      />
     )
   }
 
@@ -160,11 +193,23 @@ const useStyles = createUseStyles({
     ...layout.overlay,
   },
 
+  triggerButton: {
+    position: 'absolute',
+    right:    34,
+    width:    64,
+    top:      96,
+    height:   96,
+  },
+
   dismiss: {
     position: 'absolute',
     left:     64,
     right:    156,
     bottom:   46,
+  },
+
+  triggerList: {
+    ...layout.overlay,
   },
 
 })

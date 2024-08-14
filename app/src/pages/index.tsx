@@ -4,7 +4,6 @@ import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AlienFlashLabel, Button, VBox } from '~/components'
-import { config } from '~/config'
 import { GameStore } from '~/stores'
 import { fonts, layout } from '~/styling'
 import { observer } from '~/util'
@@ -17,15 +16,15 @@ const Index = observer('Index', () => {
   const gameStore = useStore(GameStore)
 
   const startGame = React.useCallback(() => {
-    gameStore.start(config.environment === 'development')
+    gameStore.start()
     router.push('/game')
   }, [gameStore, router])
 
-  React.useEffect(() => {
-    setTimeout(() => {
-      startGame()
-    }, 0)
-  }, [startGame])
+  // React.useEffect(() => {
+  //   setTimeout(() => {
+  //     startGame()
+  //   }, 0)
+  // }, [startGame])
 
   function render() {
     return (

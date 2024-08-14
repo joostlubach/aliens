@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router'
 import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -27,6 +28,8 @@ export const PromptCarousel = observer('PromptCarousel', () => {
   const handleEvent = React.useCallback((event: string) => {
     if (event === 'camera') {
       gameStore.showCamera()
+    } else if (event === 'typer') {
+      gameStore.showTyper()
     } else {
       gameStore.makeGameAvailable(event as GameName)
     }
@@ -72,7 +75,7 @@ export const PromptCarousel = observer('PromptCarousel', () => {
 })
 
 interface PromptCarouselItemProps {
-  prompt:  Prompt | '$scanner'
+  prompt:  Prompt | '$scanner' | '$typer'
   index:   number
   focused: boolean
 
@@ -90,6 +93,12 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
 
   const gameStore = useStore(GameStore)
   const [t] = useTranslation()
+
+  const router = useRouter()
+  const goToInvitation = React.useCallback(() => {
+    router.push('/invitation')
+  }, [router])
+
 
   // #region Delayed focus
   
@@ -154,6 +163,8 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
   const focus = React.useCallback(() => {
     if (prompt === '$scanner') {
       gameStore.focusOnPrompt('$scanner')
+    } else if (prompt === '$typer') {
+      gameStore.focusOnPrompt('$typer')
     } else {
       gameStore.focusOnPrompt(prompt.name)
     }
@@ -187,6 +198,15 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
           requestDismiss={dismiss}
           focused={focused}
         />
+      )
+    } else if (prompt === '$typer') {
+      return (
+        <TouchableScale onPress={goToInvitation}>
+          <Image
+            source={require('%images/typer.png')}
+            style={{...focusedPromptSize}}
+          />
+        </TouchableScale>
       )
     } else {
       return (
@@ -226,10 +246,10 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
       lineHeight: fonts['title-sm'].size / itemLayout.scale * fonts['title-sm'].lineHeight,
     }
 
-    if (prompt === '$scanner' || !prompt.name.match(/^.*:.*$/)) {
+    if (prompt === '$scanner' || prompt === '$typer' || !prompt.name.match(/^.*:.*$/)) {
       return (
         <Label style={labelStyle} font='body-sm' align='center'>
-          {prompt === '$scanner' ? t('qr:title') : t(`${prompt.name}:title`)}
+          {prompt === '$scanner' ? t('qr:title') : prompt === '$typer' ? t('typer:title') : t(`${prompt.name}:title`)}
         </Label>
       )
     } else {
@@ -243,11 +263,9 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
             resizeMode='contain'
             style={{width: 20 / itemLayout.scale, height: 20 / itemLayout.scale}}
           />
-          {match[2] === 'complete' && (
-            <Label style={labelStyle} font='body-sm'>
-              {t(`game:complete`)}
-            </Label>
-          )}
+          <Label style={labelStyle} font='body-sm'>
+            {t(`game:${match[2]}`)}
+          </Label>
         </HBox>
       )
     }

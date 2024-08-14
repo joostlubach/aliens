@@ -4,6 +4,10 @@ import { Trigger } from './types'
 
 export class QRParser {
 
+  public get triggers() {
+    return triggers
+  }
+
   public parse(data: string): Trigger | null {
     const url = new URL(data)
     if (!this.isAppURL(url)) { return null }

@@ -1,5 +1,11 @@
 import * as React from 'react'
-import { Image, LayoutChangeEvent, TouchableWithoutFeedback, View } from 'react-native'
+import {
+  Image,
+  LayoutChangeEvent,
+  TouchableWithoutFeedback,
+  TouchableWithoutFeedbackProps,
+  View,
+} from 'react-native'
 import { memo } from 'react-util'
 import { useBoolean } from 'react-util/hooks'
 import { Size } from 'ytil'
@@ -8,12 +14,11 @@ import { colors, createUseStyles, layout } from '~/styling'
 import { Label } from './Label'
 import { Center } from './layout'
 
-export interface ButtonProps {
+export interface ButtonProps extends TouchableWithoutFeedbackProps {
   caption?: string
   small?:   boolean
-  
+
   children?: React.ReactNode
-  onPress?:  () => any
 }
 
 
@@ -23,7 +28,7 @@ export const Button = memo('Button', (props: ButtonProps) => {
     caption,
     small = false,
     children,
-    onPress,
+    ...rest
   } = props
 
   const [pressed, pressIn, pressOut] = useBoolean()
@@ -85,12 +90,11 @@ export const Button = memo('Button', (props: ButtonProps) => {
   function render() {
     return (
       <TouchableWithoutFeedback
-        onPress={onPress}
-
         onPressIn={pressIn}
         onPressOut={pressOut}
+        {...rest}
       >
-        <View style={$.Button}>
+        <View style={[$.Button, props.disabled && $.disabled]}>
           {renderBackgroundSlices()}
           {renderContent()}
         </View>
@@ -162,6 +166,10 @@ const sliceWidth = 4
 const useStyles = createUseStyles({
   Button: {
     backgroundColor: colors.button.bg,
+  },
+
+  disabled: {
+    opacity: 0.6,
   },
 
   backgroundSlices: {

@@ -1,4 +1,6 @@
+import { shuffle } from 'lodash'
 import { action, computed, makeObservable, observable } from 'mobx'
+import { objectKeys } from 'ytil'
 
 import { GameName, GameStatus, Prompt, PromptKey, prompts, QRParser, Trigger } from './game'
 
@@ -14,10 +16,11 @@ export class GameStore {
   public visiblePromptNames = new Set<PromptKey>(['start'])
 
   @computed
-  public get visiblePrompts(): Array<Prompt | '$scanner'> {
+  public get visiblePrompts(): Array<Prompt | '$scanner' | '$typer'> {
     return [
       ...prompts.filter(it => this.visiblePromptNames.has(it.name)),
       ...this.visiblePromptNames.has('$scanner') ? ['$scanner'] as const : [],
+      ...this.visiblePromptNames.has('$typer') ? ['$typer'] as const : [],
     ]
   }
 
@@ -30,15 +33,19 @@ export class GameStore {
     return this.visiblePrompts.find(prompt => {
       if (prompt === '$scanner') {
         return this.focusedPromptName === '$scanner'
+      } else if (prompt === '$typer') {
+        return this.focusedPromptName === '$typer'
       } else {
         return prompt.name === this.focusedPromptName
       }
     })
   }
 
-  public isPromptFocused(prompt: Prompt | '$scanner') {
+  public isPromptFocused(prompt: Prompt | '$scanner' | '$typer') {
     if (prompt === '$scanner') {
       return this.focusedPromptName === '$scanner'
+    } else if (prompt === '$typer') {
+      return this.focusedPromptName === '$typer'
     } else {
       return this.focusedPromptName === prompt.name
     }
@@ -68,6 +75,16 @@ export class GameStore {
     this.visiblePromptNames.delete('$scanner')
   }
 
+  @action
+  public showTyper() {
+    this.visiblePromptNames.add('$typer')
+  }
+
+  @action
+  public hideTyper() {
+    this.visiblePromptNames.delete('$typer')
+  }
+
   // #endregion
 
   // #region Games
@@ -80,6 +97,12 @@ export class GameStore {
         this.appendPrompt(prompt.name, false)
       }
       this.appendPrompt('$scanner', false)
+      this.appendPrompt('$typer', false)
+
+      // Start all games.
+      for (const game of objectKeys(this.statuses)) {
+        this.startGame(game as GameName, false)
+      }
     } else {
       this.appendPrompt('start')
     }
@@ -93,23 +116,31 @@ export class GameStore {
     invitation: GameStatus.Unavailable,
   }
 
+  public gameStatus(game: GameName) {
+    return this.statuses[game]
+  }
+
   @action
   public makeGameAvailable(game: GameName) {
     this.statuses[game] = GameStatus.Available
   }
 
   @action
-  private startGame(game: GameName): boolean {
-    if (this.statuses[game] === GameStatus.Unavailable) { return false }
-    if (this.statuses[game] === GameStatus.Complete) { return false }
-    
-    this.statuses[game] = GameStatus.Available
-    this.appendPrompt(`${game}:start`)
+  public startGame(game: GameName, focus: boolean = false): boolean {
+    if (this.statuses[game] === GameStatus.Unavailable) {
+      this.statuses[game] = GameStatus.Available
+    }
+
+    if (game === 'invitation') {
+      this.availableInvitationWords = shuffle(invitationWords)
+    }
+
+    this.appendPrompt(`${game}:start`, focus)
     return true
   }
 
   @action
-  private completeGame(game: GameName): boolean {
+  public completeGame(game: GameName): boolean {
     if (this.statuses[game] !== GameStatus.Available) { return false }
     
     this.statuses[game] = GameStatus.Complete
@@ -124,9 +155,22 @@ export class GameStore {
   @observable
   public invitationWords: string[] = []
   
+  @observable
+  public availableInvitationWords: string[] = []
+
   @computed
-  public get availableInvitationWords() {
-    return invitationWords.filter(word => !this.invitationWords.includes(word))
+  public get remainingInvitationWords() {
+    return this.availableInvitationWords.filter(it => !this.invitationWords.includes(it))
+  }
+
+  @computed
+  public get isInvitationCorrect() {
+    return this.invitationWords.join(' ') === invitationWords.join(' ')
+  }
+
+  @computed
+  public get maySubmitInvitation() {
+    return this.remainingInvitationWords.length === 0
   }
 
   @action
@@ -189,6 +233,11 @@ export class GameStore {
 
   private qrParser = new QRParser()
 
+  @computed
+  public get triggers() {
+    return this.qrParser.triggers
+  }
+
   public processQR(data: string) {
     const trigger = this.qrParser.parse(data)
     if (trigger == null) { return ProcessQRResult.Invalid }
@@ -197,7 +246,7 @@ export class GameStore {
     return executed ? ProcessQRResult.Success : ProcessQRResult.Unhandled
   }
 
-  private executeTrigger(trigger: Trigger): boolean {
+  public executeTrigger(trigger: Trigger): boolean {
     switch (trigger.type) {
     case 'game:start':
       return this.startGame(trigger.game)
