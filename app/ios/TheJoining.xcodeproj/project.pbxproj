@@ -344,6 +344,7 @@
 					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = TheJoining/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "The Joining";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -356,7 +357,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = co.mosdev.joining;
+				PRODUCT_BUNDLE_IDENTIFIER = co.mosdev.TheJoining;
 				PRODUCT_NAME = TheJoining;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -380,6 +381,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4J5UV3XVC3;
 				INFOPLIST_FILE = TheJoining/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "The Joining";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -392,7 +394,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = co.mosdev.joining;
+				PRODUCT_BUNDLE_IDENTIFIER = co.mosdev.TheJoining;
 				PRODUCT_NAME = TheJoining;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
