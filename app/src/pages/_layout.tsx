@@ -2,6 +2,7 @@
 import '~/init'
 
 import { Slot } from 'expo-router'
+import { useFonts } from 'expo-font'
 import * as ExpoSplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { StoreProvider } from 'mobx-store'
@@ -22,6 +23,17 @@ const RootLayout = observer('RootLayout', () => {
   const safeArea = useSafeAreaInsets()
   const [initialized, setInitialized] = React.useState<boolean>(false)
 
+  const [fontsLoaded, error] = useFonts({
+    Futura:    require('%fonts/futur.ttf'),
+    SpaceDude: require('%fonts/spacedude.ttf'),
+  })
+
+  React.useEffect(() => {
+    if (error != null) {
+      console.log(error)
+    }
+  }, [error])
+
   const onStoresInitialized = React.useCallback(() => {
     setInitialized(true)
     ExpoSplashScreen.hideAsync()
@@ -38,7 +50,7 @@ const RootLayout = observer('RootLayout', () => {
           {renderArt()}
 
           <Themed dark>
-            {initialized && <Slot/>}
+            {initialized && fontsLoaded && <Slot/>}
           </Themed>
         </ImageBackground>
       </StoreProvider>
