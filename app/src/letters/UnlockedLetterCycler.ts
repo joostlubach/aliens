@@ -21,7 +21,7 @@ export class UnlockedLetterCycler {
 
   private cycle = () => {
     const next = this.queue.shift()
-    console.log("CYCLE", next)
+
     if (next == null) {
       this.onCycle(null)
     } else {

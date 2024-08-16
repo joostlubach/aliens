@@ -54,8 +54,8 @@ export const TypingLabel = forwardRef('TypingLabel', (props: TypingLabelProps, r
 
 
   const typer = React.useMemo(
-    () => new AutoTyper(text, setDisplayText),
-    [text],
+    () => new AutoTyper(setDisplayText),
+    [],
   )
 
   typer.events = events
@@ -63,6 +63,10 @@ export const TypingLabel = forwardRef('TypingLabel', (props: TypingLabelProps, r
   typer.onTypingStart = onTypingStart
   typer.onTypingStop = onTypingStop
   typer.onTypingEnd = onTypingEnd
+
+  React.useEffect(() => {
+    typer.setText(text)
+  }, [text, typer])
 
   const prevPaused = usePrevious(paused)
   React.useEffect(() => {
@@ -107,13 +111,27 @@ export const TypingLabel = forwardRef('TypingLabel', (props: TypingLabelProps, r
 class AutoTyper {
 
   constructor(
-    private readonly text: string,
     private onDisplayTextChange: (text: string) => void
   ) {}
 
   private timer = new Timer()
 
+  private text:        string = ''
   private displayText: string = ''
+
+  public setText(text: string) {
+    if (text === this.text) { return }
+
+    if (this.text.length > 0 && this.isDone) {
+      this.text = text
+      this.displayText = text
+      this.onDisplayTextChange(this.displayText)
+    } else {
+      this.text = text
+      this.displayText = ''
+      this.onDisplayTextChange(this.displayText)
+    }
+  }
 
   public get isDone() {
     return this.displayText.length === this.text.length
@@ -127,14 +145,6 @@ class AutoTyper {
 
   // #region Interface
 
-  public start() {
-    if (this.timer.isActive) { return }
-    if (this.text.length === 0) { return }
-
-    this.onTypingStart?.()
-    this.timer.setTimeout(() => this.nextLetter(), 0)
-  }
-
   public pause() {
     if (this.isDone) { return }
     if (!this.timer.isActive) { return }
@@ -144,12 +154,13 @@ class AutoTyper {
   }
 
   public resume() {
+    if (this.text.length === 0) { return }
     if (this.isDone) { return }
     if (this.timer.isActive) { return }
 
     this.timer.enable()
-    this.timer.debounce(() => this.nextLetter(), 0)
     this.onTypingStart?.()
+    this.timer.debounce(() => this.nextLetter(), 0)
   }
 
   public skip() {
@@ -219,7 +230,7 @@ function extractEvents(textWithEvents: string): [string, TypingLabelEvent[]] {
   }
 
   text += remainder
-  return [text, events]
+  return [text.trim(), events]
 }
 
 const EVENT_REGEXP = /†\[(.*?)\]/
