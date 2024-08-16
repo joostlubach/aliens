@@ -280,7 +280,7 @@ const useStyles = createUseStyles({
 
   dismissButton: {
     position: 'absolute',
-    bottom:   24,
+    bottom:   20,
     right:    64,
   },
 })

@@ -61,6 +61,11 @@ const GameStatusIndicator = observer('GameStatusIndicator', (props: GameStatusIn
       <Pop in={status != null}>
         <Center style={$.GameStatusIndicator}>
           <Image source={icon}/>
+          {status === GameStatus.Complete && (
+            <Center style={$.completed}>
+              <Image source={require('%images/check.png')}/>
+            </Center>
+          )}
         </Center>
       </Pop>
     )
@@ -83,5 +88,11 @@ const useStyles = createUseStyles(theme => ({
     
     backgroundColor: theme.semantic.primary.alpha(0.6),
     borderRadius:    layout.radius.m,
+  },
+
+  completed: {
+    position: 'absolute',
+    top:      -12,
+    right:    -12,
   },
 } as const))

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator } from 'react-native'
 
 import { AlienFlashLabel, Button, Label, VBox } from '~/components'
-import { config } from '~/config'
 import { GameStore, PromptStore } from '~/stores'
 import { fonts, layout } from '~/styling'
 import { observer } from '~/util'
@@ -27,7 +26,8 @@ const Index = observer('Index', () => {
   }, [promptsStore])
 
   const startGame = React.useCallback(() => {
-    gameStore.start(config.environment === 'development')
+    // gameStore.start(config.environment === 'development')
+    gameStore.start()
     router.push('/game')
   }, [gameStore, router])
 

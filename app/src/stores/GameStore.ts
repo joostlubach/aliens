@@ -125,6 +125,7 @@ export class GameStore {
         if (!this.promptStore.keys.includes(`${game}:start`)) { continue }
         if (!this.promptStore.keys.includes(`${game}:complete`)) { continue }
 
+        console.log(game)
         this.makeGameAvailable(game as GameName)
       }
     } else {
@@ -288,6 +289,7 @@ export class GameStore {
 
   // #region Reset
 
+  @action
   public reset() {
     this.visiblePromptKeys.clear()
     this.statuses = {}
