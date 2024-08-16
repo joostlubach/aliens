@@ -1,4 +1,5 @@
 import { BarcodeScanningResult, CameraView } from 'expo-camera'
+import { useRouter } from 'expo-router'
 import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -28,6 +29,7 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
   const gameStore = useStore(GameStore)
   const {hasPermission, ensurePermission} = qrStore
 
+  const router = useRouter()
   const [triggerListOpen, openTriggerList, closeTriggerList] = useBoolean()
 
   const [t] = useTranslation('qr')
@@ -53,7 +55,11 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
   const handleTriggerPress = React.useCallback((trigger: Trigger) => {
     gameStore.executeTrigger(trigger)
     closeTriggerList()
-  }, [closeTriggerList, gameStore])
+
+    if (trigger.type === 'game:start' && trigger.game === 'invitation') {
+      router.push('/invitation')
+    }
+  }, [closeTriggerList, gameStore, router])
 
   // #region Rendering
 

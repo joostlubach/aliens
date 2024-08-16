@@ -1,17 +1,10 @@
-import { games, prompts } from './data'
-
-export type PromptKey = (typeof prompts[number])['name'] | '$scanner' | '$typer'
-
-export interface Prompt {
-  name:       PromptKey
-  paragraphs: string[]
-}
+import { games } from './data'
 
 export type GameName = (typeof games)[number]
 
 export enum GameStatus {
-  Unavailable,
   Available,
+  Started,
   Complete
 }
 

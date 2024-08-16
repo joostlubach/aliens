@@ -4,3 +4,4 @@ game:
 
 buttons:
   dismiss: DISMISS
+  retry: RETRY

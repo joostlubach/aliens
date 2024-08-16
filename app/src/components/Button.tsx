@@ -27,6 +27,7 @@ export const Button = memo('Button', (props: ButtonProps) => {
   const {
     caption,
     small = false,
+    disabled,
     children,
     ...rest
   } = props
@@ -92,9 +93,10 @@ export const Button = memo('Button', (props: ButtonProps) => {
       <TouchableWithoutFeedback
         onPressIn={pressIn}
         onPressOut={pressOut}
+        disabled={disabled}
         {...rest}
       >
-        <View style={[$.Button, props.disabled && $.disabled]}>
+        <View style={[$.Button, disabled && $.disabled]}>
           {renderBackgroundSlices()}
           {renderContent()}
         </View>
@@ -103,7 +105,7 @@ export const Button = memo('Button', (props: ButtonProps) => {
   }
 
   function renderBackgroundSlices() {
-    const set = pressed ? images.pressed : images.normal
+    const set = !disabled && pressed ? images.pressed : images.normal
 
     return (
       <View style={[$.backgroundSlices]} onLayout={layoutBackgroundSlices}>

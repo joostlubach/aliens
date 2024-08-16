@@ -13,7 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "bundleIdentifier": "co.mosdev.TheJoining",
+      "bundleIdentifier": "co.mosdev.joining",
       "entitlements": {
         "aps-environment": "development"
       }

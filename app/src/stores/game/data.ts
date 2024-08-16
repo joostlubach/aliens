@@ -1,45 +1,4 @@
-import I18next from 'i18next'
-
 import { Trigger } from './types'
-
-export const prompts = [
-  {
-    name:       'start',
-    paragraphs: I18next.t('start:paragraphs') as unknown as string[],
-  },
-  {
-    name:       'cocktail:start',
-    paragraphs: I18next.t('cocktail:start.paragraphs') as unknown as string[],
-  },
-  {
-    name:       'cocktail:complete',
-    paragraphs: I18next.t('cocktail:complete.paragraphs') as unknown as string[],
-  },
-  {
-    name:       'colander:start',
-    paragraphs: I18next.t('colander:start.paragraphs') as unknown as string[],
-  },
-  {
-    name:       'colander:complete',
-    paragraphs: I18next.t('colander:complete.paragraphs') as unknown as string[],
-  },
-  {
-    name:       'crop:start',
-    paragraphs: I18next.t('crop:start.paragraphs') as unknown as string[],
-  },
-  {
-    name:       'crop:complete',
-    paragraphs: I18next.t('crop:complete.paragraphs') as unknown as string[],
-  },
-  {
-    name:       'invitation:start',
-    paragraphs: I18next.t('invitation:start.paragraphs') as unknown as string[],
-  },
-  {
-    name:       'invitation:complete',
-    paragraphs: I18next.t('invitation:complete.paragraphs') as unknown as string[],
-  },
-] as const
 
 export const games = ['cocktail', 'colander', 'crop', 'invitation'] as const
 
@@ -79,4 +38,104 @@ export const triggers: Trigger[] = [{
   key:    'b7c3a1a1-2d7f-4b9c-9b5b-6b6b3b1c8f5e',
   type:   'letter',
   letter: 'A',
+}, {
+  key:    '42bf2e1b-6cda-4a73-bd43-6b03d1ef47e2',
+  type:   'letter',
+  letter: 'B',
+}, {
+  key:    '3dca2674-be7f-40e4-8178-b4cab9968391',
+  type:   'letter',
+  letter: 'C',
+}, {
+  key:    'c8736f31-b766-4d58-b98a-3104c37e00bf',
+  type:   'letter',
+  letter: 'D',
+}, {
+  key:    'acca1522-ff17-4395-8d10-81f8022afe89',
+  type:   'letter',
+  letter: 'E',
+}, {
+  key:    '19b3da24-8531-4436-b430-70018c9c1b1e',
+  type:   'letter',
+  letter: 'F',
+}, {
+  key:    'd15e2166-3974-431d-87a2-bb50df32c73a',
+  type:   'letter',
+  letter: 'G',
+}, {
+  key:    '74dfb0d3-29db-4878-8238-a9ac46979347',
+  type:   'letter',
+  letter: 'H',
+}, {
+  key:    '7af239fc-4e7d-4923-9baf-72ccb298442b',
+  type:   'letter',
+  letter: 'I',
+}, {
+  key:    '078b0231-6e90-4397-bb31-3c1bddadba5d',
+  type:   'letter',
+  letter: 'J',
+}, {
+  key:    '8bfa90c6-bb54-4b62-903d-732187d58f8b',
+  type:   'letter',
+  letter: 'K',
+}, {
+  key:    '77a6dcf4-72ef-4706-a5d0-78a053f50090',
+  type:   'letter',
+  letter: 'L',
+}, {
+  key:    'a7321bfd-edff-4416-9419-cd17a663d9d3',
+  type:   'letter',
+  letter: 'M',
+}, {
+  key:    '2b3856c5-573b-4b58-b15b-1d6ec5f3ec69',
+  type:   'letter',
+  letter: 'N',
+}, {
+  key:    '42bf2e1b-6cda-4a73-bd43-6b03d1ef47e3',
+  type:   'letter',
+  letter: 'O',
+}, {
+  key:    '3dca2674-be7f-40e4-8178-b4cab9968392',
+  type:   'letter',
+  letter: 'P',
+}, {
+  key:    'c8736f31-b766-4d58-b98a-3104c37e00c0',
+  type:   'letter',
+  letter: 'Q',
+}, {
+  key:    'acca1522-ff17-4395-8d10-81f8022afe8a',
+  type:   'letter',
+  letter: 'R',
+}, {
+  key:    '19b3da24-8531-4436-b430-70018c9c1b1f',
+  type:   'letter',
+  letter: 'S',
+}, {
+  key:    'd15e2166-3974-431d-87a2-bb50df32c73b',
+  type:   'letter',
+  letter: 'T',
+}, {
+  key:    '74dfb0d3-29db-4878-8238-a9ac46979348',
+  type:   'letter',
+  letter: 'U',
+}, {
+  key:    '7af239fc-4e7d-4923-9baf-72ccb298442c',
+  type:   'letter',
+  letter: 'V',
+}, {
+  key:    '078b0231-6e90-4397-bb31-3c1bddadba5e',
+  type:   'letter',
+  letter: 'W',
+}, {
+  key:    '8bfa90c6-bb54-4b62-903d-732187d58f8c',
+  type:   'letter',
+  letter: 'X',
+}, {
+  key:    '77a6dcf4-72ef-4706-a5d0-78a053f50091',
+  type:   'letter',
+  letter: 'Y',
+}, {
+  key:    'a7321bfd-edff-4416-9419-cd17a663d9d4',
+  type:   'letter',
+  letter: 'Z',
 }] as const

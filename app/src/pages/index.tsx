@@ -2,9 +2,11 @@ import { useRouter } from 'expo-router'
 import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
+import { ActivityIndicator } from 'react-native'
 
-import { AlienFlashLabel, Button, VBox } from '~/components'
-import { GameStore } from '~/stores'
+import { AlienFlashLabel, Button, Label, VBox } from '~/components'
+import { config } from '~/config'
+import { GameStore, PromptStore } from '~/stores'
 import { fonts, layout } from '~/styling'
 import { observer } from '~/util'
 
@@ -14,17 +16,20 @@ const Index = observer('Index', () => {
 
   const router = useRouter()
   const gameStore = useStore(GameStore)
+  const promptsStore = useStore(PromptStore)
+
+  const loadPrompts = React.useCallback(() => {
+    promptsStore.loadPrompts()
+  }, [promptsStore])
+
+  React.useEffect(() => {
+    promptsStore.loadPrompts()
+  }, [promptsStore])
 
   const startGame = React.useCallback(() => {
-    gameStore.start()
+    gameStore.start(config.environment === 'development')
     router.push('/game')
   }, [gameStore, router])
-
-  // React.useEffect(() => {
-  //   setTimeout(() => {
-  //     startGame()
-  //   }, 0)
-  // }, [startGame])
 
   function render() {
     return (
@@ -36,10 +41,29 @@ const Index = observer('Index', () => {
         </VBox>
         <VBox flex justify='space-around' padding={layout.padding.md}>
           <VBox/>
-          <Button
-            caption={t('start_game')}
-            onPress={startGame}
-          />
+
+          {promptsStore.loading ? (
+            <ActivityIndicator
+              size='large'
+              color='white'
+            />
+          ) : promptsStore.loaded ? (
+            <Button
+              caption={t('start_game')}
+              onPress={startGame}
+            />
+          ) : (
+            <VBox gap={layout.padding.sm}>
+              <Label align='center'>
+                THE CONNECTION TO OUR PLANET IS SHAKY
+              </Label>
+              <Button
+                caption={t('buttons:retry')}
+                onPress={loadPrompts}
+                disabled={promptsStore.loading}
+              />
+            </VBox>
+          )}
         </VBox>
       </VBox>
     )

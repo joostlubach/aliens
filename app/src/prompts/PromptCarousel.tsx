@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router'
 import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, SafeAreaView, TouchableWithoutFeedback, View } from 'react-native'
+import { Image, TouchableWithoutFeedback, View } from 'react-native'
 import Animated, {
   AnimatableValue,
   FadeIn,
@@ -10,6 +10,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { memo } from 'react-util'
 import { usePrevious } from 'react-util/hooks'
 
@@ -24,6 +25,7 @@ import { focusedPromptLayout, focusedPromptSize, unfocusedPromptLayout } from '.
 export const PromptCarousel = observer('PromptCarousel', () => {
 
   const gameStore = useStore(GameStore)
+  const safeArea = useSafeAreaInsets()
 
   const handleEvent = React.useCallback((event: string) => {
     if (event === 'camera') {
@@ -36,7 +38,7 @@ export const PromptCarousel = observer('PromptCarousel', () => {
   }, [gameStore])
 
   const dismiss = React.useCallback(() => {
-    if (gameStore.focusedPromptName === 'start') { return }
+    if (gameStore.focusedPromptKey === 'start') { return }
     gameStore.focusOnPrompt(null)
   }, [gameStore])
 
@@ -46,25 +48,23 @@ export const PromptCarousel = observer('PromptCarousel', () => {
 
   function render() {
     return (
-      <SafeAreaView style={$.PromptCarousel}>
-        <VBox flex pointerEvents='box-none'>
-          {gameStore.visiblePrompts.map((prompt, index) => (
-            <PromptCarouselItem
-              key={index}
-              prompt={prompt}
-              index={index}
-              focused={gameStore.isPromptFocused(prompt)}
-              onEvent={handleEvent}
-            />
-          ))}
+      <VBox style={$.PromptCarousel} flex pointerEvents='box-none'>
+        {gameStore.visiblePrompts.map((prompt, index) => (
+          <PromptCarouselItem
+            key={index}
+            prompt={prompt}
+            index={index}
+            focused={gameStore.isPromptFocused(prompt)}
+            onEvent={handleEvent}
+          />
+        ))}
 
-          {gameStore.focusedPromptName != null && (
-            <TouchableWithoutFeedback onPress={dismiss}>
-              <Animated.View entering={FadeIn} style={$.shim}/>
-            </TouchableWithoutFeedback>
-          )}
-        </VBox>
-      </SafeAreaView>
+        {gameStore.focusedPromptKey != null && (
+          <TouchableWithoutFeedback onPress={dismiss}>
+            <Animated.View entering={FadeIn} style={$.shim}/>
+          </TouchableWithoutFeedback>
+        )}
+      </VBox>
     )
   }
 
@@ -123,9 +123,11 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
 
   // #region Animated layout
 
+  const safeArea = useSafeAreaInsets()
+
   const itemLayout = React.useMemo(
-    () => showFocused ? focusedPromptLayout : unfocusedPromptLayout(index),
-    [index, showFocused]
+    () => showFocused ? focusedPromptLayout : unfocusedPromptLayout(index, safeArea),
+    [index, safeArea, showFocused]
   )
 
   const left = useSharedValue(itemLayout.left)
@@ -166,7 +168,7 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
     } else if (prompt === '$typer') {
       gameStore.focusOnPrompt('$typer')
     } else {
-      gameStore.focusOnPrompt(prompt.name)
+      gameStore.focusOnPrompt(prompt.key)
     }
   }, [gameStore, prompt])
 
@@ -211,7 +213,7 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
     } else {
       return (
         <PromptScreen
-          key={prompt.name}
+          key={prompt.key}
           paragraphs={prompt.paragraphs}
           markup
         
@@ -246,14 +248,14 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
       lineHeight: fonts['title-sm'].size / itemLayout.scale * fonts['title-sm'].lineHeight,
     }
 
-    if (prompt === '$scanner' || prompt === '$typer' || !prompt.name.match(/^.*:.*$/)) {
+    if (prompt === '$scanner' || prompt === '$typer' || !prompt.key.match(/^.*:.*$/)) {
       return (
         <Label style={labelStyle} font='body-sm' align='center'>
-          {prompt === '$scanner' ? t('qr:title') : prompt === '$typer' ? t('typer:title') : t(`${prompt.name}:title`)}
+          {prompt === '$scanner' ? t('qr:title') : prompt === '$typer' ? t('typer:title') : t(`${prompt.key}:title`)}
         </Label>
       )
     } else {
-      const match = prompt.name.match(/^(.*):(.*)$/)
+      const match = prompt.key.match(/^(.*):(.*)$/)
       if (match == null) { return null }
 
       return (

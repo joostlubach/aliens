@@ -1,3 +1,5 @@
+import { EdgeInsets } from 'react-native-safe-area-context'
+
 import { fonts, layout } from '~/styling'
 
 const columnCount = 4
@@ -21,7 +23,7 @@ export const focusedPromptLayout = {
   scale: 1,
 }
 
-export function unfocusedPromptLayout(index: number) {
+export function unfocusedPromptLayout(index: number, safeArea: EdgeInsets) {
   const column = index % columnCount
   const row = Math.floor(index / columnCount)
 
@@ -31,7 +33,7 @@ export function unfocusedPromptLayout(index: number) {
 
   return {
     left:  promptGap + column * width,
-    top:   promptGap + row * height,
+    top:   promptGap + row * height + safeArea.top,
     scale: unfocusedPromptScale,
   }
 }

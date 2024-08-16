@@ -1,8 +1,11 @@
+import I18next from 'i18next'
 import { shuffle } from 'lodash'
 import { action, computed, makeObservable, observable } from 'mobx'
-import { objectKeys } from 'ytil'
+import { inject } from 'mobx-store'
 
-import { GameName, GameStatus, Prompt, PromptKey, prompts, QRParser, Trigger } from './game'
+import { Prompt, PromptKey, PromptStore } from './PromptStore'
+import { GameName, GameStatus, QRParser, Trigger } from './game'
+import { games } from './game/data'
 
 export class GameStore {
 
@@ -10,55 +13,70 @@ export class GameStore {
     makeObservable(this)
   }
 
+  @inject(PromptStore)
+  private promptStore!: PromptStore
+
   // #region Prompts
 
   @observable
-  public visiblePromptNames = new Set<PromptKey>(['start'])
+  public visiblePromptKeys = new Set<PromptKey>([])
 
   @computed
   public get visiblePrompts(): Array<Prompt | '$scanner' | '$typer'> {
-    return [
-      ...prompts.filter(it => this.visiblePromptNames.has(it.name)),
-      ...this.visiblePromptNames.has('$scanner') ? ['$scanner'] as const : [],
-      ...this.visiblePromptNames.has('$typer') ? ['$typer'] as const : [],
-    ]
+    const prompts: Array<Prompt | '$scanner' | '$typer'> = []
+    for (const key of this.visiblePromptKeys) {
+      if (key.startsWith('$')) { continue }
+
+      const prompt = this.promptStore.getPrompt(key, I18next.language)
+      if (prompt == null) { continue }
+      prompts.push(prompt)
+    }
+
+    if (this.visiblePromptKeys.has('$scanner')) {
+      prompts.push('$scanner')
+    }
+    if (this.visiblePromptKeys.has('$typer')) {
+      prompts.push('$typer')
+    }
+
+    return prompts
   }
 
   @observable
-  public focusedPromptName: PromptKey | null = null
+  public focusedPromptKey: PromptKey | null = null
 
   @computed
   public get focusedPrompt() {
-    if (this.focusedPromptName == null) { return null }
+    if (this.focusedPromptKey == null) { return null }
     return this.visiblePrompts.find(prompt => {
       if (prompt === '$scanner') {
-        return this.focusedPromptName === '$scanner'
+        return this.focusedPromptKey === '$scanner'
       } else if (prompt === '$typer') {
-        return this.focusedPromptName === '$typer'
+        return this.focusedPromptKey === '$typer'
       } else {
-        return prompt.name === this.focusedPromptName
+        return prompt.key === this.focusedPromptKey
       }
     })
   }
 
   public isPromptFocused(prompt: Prompt | '$scanner' | '$typer') {
     if (prompt === '$scanner') {
-      return this.focusedPromptName === '$scanner'
+      return this.focusedPromptKey === '$scanner'
     } else if (prompt === '$typer') {
-      return this.focusedPromptName === '$typer'
+      return this.focusedPromptKey === '$typer'
     } else {
-      return this.focusedPromptName === prompt.name
+      return this.focusedPromptKey === prompt.key
     }
   }
 
   @action
   public focusOnPrompt(name: PromptKey | null) {
-    this.focusedPromptName = name
+    this.focusedPromptKey = name
   }
 
   @action
   public appendPrompt(name: PromptKey, focus: boolean = true) {
-    this.visiblePromptNames.add(name)
+    this.visiblePromptKeys.add(name)
     
     if (focus) {
       this.focusOnPrompt(name)
@@ -67,22 +85,22 @@ export class GameStore {
 
   @action
   public showCamera() {
-    this.visiblePromptNames.add('$scanner')
+    this.visiblePromptKeys.add('$scanner')
   }
 
   @action
   public hideCamera() {
-    this.visiblePromptNames.delete('$scanner')
+    this.visiblePromptKeys.delete('$scanner')
   }
 
   @action
   public showTyper() {
-    this.visiblePromptNames.add('$typer')
+    this.visiblePromptKeys.add('$typer')
   }
 
   @action
   public hideTyper() {
-    this.visiblePromptNames.delete('$typer')
+    this.visiblePromptKeys.delete('$typer')
   }
 
   // #endregion
@@ -93,15 +111,21 @@ export class GameStore {
   public start(dev: boolean = false) {
     if (dev) {
       // Append all prompts.
-      for (const prompt of prompts) {
-        this.appendPrompt(prompt.name, false)
+      for (const key of this.promptStore.keys) {
+        const prompt = this.promptStore.getPrompt(key, I18next.language)
+        if (prompt != null) {
+          this.appendPrompt(prompt.key, false)
+        }
       }
       this.appendPrompt('$scanner', false)
       this.appendPrompt('$typer', false)
 
-      // Start all games.
-      for (const game of objectKeys(this.statuses)) {
-        this.startGame(game as GameName, false)
+      // Make all games available that have a start and complete prompt.
+      for (const game of games) {
+        if (!this.promptStore.keys.includes(`${game}:start`)) { continue }
+        if (!this.promptStore.keys.includes(`${game}:complete`)) { continue }
+
+        this.makeGameAvailable(game as GameName)
       }
     } else {
       this.appendPrompt('start')
@@ -109,12 +133,7 @@ export class GameStore {
   }
   
   @observable
-  public statuses: Record<GameName, GameStatus> = {
-    cocktail:   GameStatus.Unavailable,
-    colander:   GameStatus.Unavailable,
-    crop:       GameStatus.Unavailable,
-    invitation: GameStatus.Unavailable,
-  }
+  public statuses: Partial<Record<GameName, GameStatus>> = {}
 
   public gameStatus(game: GameName) {
     return this.statuses[game]
@@ -122,18 +141,18 @@ export class GameStore {
 
   @action
   public makeGameAvailable(game: GameName) {
+    if (!this.promptStore.keys.includes(`${game}:start`)) { return }
+
     this.statuses[game] = GameStatus.Available
   }
 
   @action
-  public startGame(game: GameName, focus: boolean = false): boolean {
-    if (this.statuses[game] === GameStatus.Unavailable) {
-      this.statuses[game] = GameStatus.Available
-    }
-
+  public startGame(game: GameName, focus: boolean = true): boolean {
     if (game === 'invitation') {
       this.availableInvitationWords = shuffle(invitationWords)
     }
+
+    this.statuses[game] = GameStatus.Started
 
     this.appendPrompt(`${game}:start`, focus)
     return true
@@ -141,10 +160,13 @@ export class GameStore {
 
   @action
   public completeGame(game: GameName): boolean {
-    if (this.statuses[game] !== GameStatus.Available) { return false }
+    if (this.statuses[game] !== GameStatus.Started) { return false }
     
     this.statuses[game] = GameStatus.Complete
-    this.appendPrompt(`${game}:complete`)
+
+    if (this.promptStore.keys.includes(`${game}:start`)) {
+      this.appendPrompt(`${game}:complete`)
+    }
     return true
   }
 
