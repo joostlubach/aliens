@@ -1,1 +1,1 @@
-{"game":{"start":"start","complete":"complete"},"buttons":{"dismiss":"DISMISS","retry":"RETRY"}}
+{"game":{"start":"start","complete":"complete"},"buttons":{"dismiss":"DISMISS","retry":"RETRY","start":"START"},"typer":{"title":"Invitation"}}

@@ -55,11 +55,7 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
   const handleTriggerPress = React.useCallback((trigger: Trigger) => {
     gameStore.executeTrigger(trigger)
     closeTriggerList()
-
-    if (trigger.type === 'game:start' && trigger.game === 'invitation') {
-      router.push('/invitation')
-    }
-  }, [closeTriggerList, gameStore, router])
+  }, [closeTriggerList, gameStore])
 
   // #region Rendering
 
@@ -71,64 +67,17 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
 
     return (
       <View style={$.QRScanner}>
-        {hasPermission == null ? (
-          renderRequestPermission()
-        ) : !hasPermission ? (
-          renderNoPermission()
-        ) : (
-          renderCameraView()
-        )}
-        {triggerListOpen && renderTriggerList()}
-      </View>
-    )
-  }
-
-  function renderRequestPermission() {
-    return (
-      <Center flex gap={layout.padding.md} pointerEvents='box-none'>
-        <Label align='center'>
-          {t('permission.request.prompt')}
-        </Label>
-        <Button
-          caption={t('permission.request.button')}
-          onPress={ensurePermission}
-        />
-      </Center>
-    )
-  }
-
-  function renderNoPermission() {
-    return (
-      <Center flex gap={layout.padding.md} pointerEvents='box-none'>
-        <Label>
-          {t('permission.denied')}
-        </Label>
-        <Button
-          caption={t('permission.settings')}
-          onPress={openSettingsBundle}
-        />
-      </Center>
-    )
-  }
-
-  function renderCameraView() {
-    return (
-      <>
         <View style={$.cameraWrapper}>
-          {focused && (
-            <CameraView
-              style={$.camera}
-              barcodeScannerSettings={{
-                barcodeTypes: ['qr'],
-              }}
-              onBarcodeScanned={focused ? handleBarCodeScanned : undefined}
-            />
-          )}
+          {focused && renderContent()}
         </View>
-        <Image
-          style={$.frame}
-          source={require('%images/camera.png')}
-        />
+
+        <View pointerEvents='none'>
+          <Image
+            style={$.frame}
+            source={require('%images/camera.png')}
+          />
+        </View>
+
         <TouchableWithoutFeedback onLongPress={openTriggerList}>
           <View style={$.triggerButton}/>
         </TouchableWithoutFeedback>
@@ -141,7 +90,58 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
             />
           </VBox>
         )}
-      </>
+        {triggerListOpen && renderTriggerList()}
+      </View>
+    )
+  }
+
+  function renderContent() {
+    if (hasPermission == null) {
+      return renderRequestPermission()
+    } else if (!hasPermission) {
+      return renderNoPermission()
+    } else {
+      return renderScanner()
+    }
+  }
+
+  function renderRequestPermission() {
+    return (
+      <Center flex padding={layout.padding.md} gap={layout.padding.md} pointerEvents='box-none'>
+        <Label font='title-sm' align='center'>
+          {t('permission.request.prompt')}
+        </Label>
+        <Button
+          caption={t('permission.request.button')}
+          onPress={ensurePermission}
+        />
+      </Center>
+    )
+  }
+
+  function renderNoPermission() {
+    return (
+      <Center flex padding={layout.padding.md} gap={layout.padding.md} pointerEvents='box-none'>
+        <Label font='title-sm' align='center'>
+          {t('permission.denied')}
+        </Label>
+        <Button
+          caption={t('permission.settings')}
+          onPress={openSettingsBundle}
+        />
+      </Center>
+    )
+  }
+
+  function renderScanner() {
+    return (
+      <CameraView
+        style={$.camera}
+        barcodeScannerSettings={{
+          barcodeTypes: ['qr'],
+        }}
+        onBarcodeScanned={focused ? handleBarCodeScanned : undefined}
+      />
     )
   }
 

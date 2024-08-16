@@ -49,7 +49,7 @@ const Index = observer('Index', () => {
             />
           ) : promptsStore.loaded ? (
             <Button
-              caption={t('start_game')}
+              caption={t('buttons:start')}
               onPress={startGame}
             />
           ) : (

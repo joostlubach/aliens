@@ -25,15 +25,18 @@ import { focusedPromptLayout, focusedPromptSize, unfocusedPromptLayout } from '.
 export const PromptCarousel = observer('PromptCarousel', () => {
 
   const gameStore = useStore(GameStore)
-  const safeArea = useSafeAreaInsets()
 
   const handleEvent = React.useCallback((event: string) => {
     if (event === 'camera') {
       gameStore.showCamera()
     } else if (event === 'typer') {
       gameStore.showTyper()
-    } else {
-      gameStore.makeGameAvailable(event as GameName)
+    } else if (event.startsWith('game:start:')) {
+      gameStore.startGame(event.slice(11) as GameName)
+    } else if (event.startsWith('game:')) {
+      gameStore.makeGameAvailable(event.slice(5) as GameName)
+    } else if (event.startsWith('prompt:')) {
+      gameStore.appendPrompt(event.slice(6))
     }
   }, [gameStore])
 
