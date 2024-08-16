@@ -27,7 +27,7 @@ export interface GameCompleteTrigger {
 }
 
 export interface AlienLetterTrigger {
-  key:    string
-  type:   'letter'
-  letter: string
+  key:     string
+  type:    'letter'
+  letter?: string
 }

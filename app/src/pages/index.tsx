@@ -25,7 +25,7 @@ const Index = observer('Index', () => {
     promptsStore.loadPrompts()
   }, [promptsStore])
 
-  const startGame = React.useCallback(() => {
+  const start = React.useCallback(() => {
     // gameStore.start(config.environment === 'development')
     gameStore.start()
     router.push('/game')
@@ -33,8 +33,8 @@ const Index = observer('Index', () => {
 
   const resetGame = React.useCallback(() => {
     gameStore.reset()
-    startGame()
-  }, [gameStore, startGame])
+    start()
+  }, [gameStore, start])
 
   function render() {
     return (
@@ -55,7 +55,7 @@ const Index = observer('Index', () => {
           ) : promptsStore.loaded ? (
             <Button
               caption={t('buttons:start')}
-              onPress={startGame}
+              onPress={start}
               onLongPress={resetGame}
             />
           ) : (

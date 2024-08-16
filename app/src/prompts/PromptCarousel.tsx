@@ -166,10 +166,8 @@ const PromptCarouselItem = memo('PromptCarouselItem', (props: PromptCarouselItem
   // #region Callbacks
 
   const focus = React.useCallback(() => {
-    if (prompt === '$scanner') {
-      gameStore.focusOnPrompt('$scanner')
-    } else if (prompt === '$typer') {
-      gameStore.focusOnPrompt('$typer')
+    if (typeof prompt === 'string') {
+      gameStore.focusOnPrompt(prompt)
     } else {
       gameStore.focusOnPrompt(prompt.key)
     }

@@ -138,4 +138,7 @@ export const triggers: Trigger[] = [{
   key:    'a7321bfd-edff-4416-9419-cd17a663d9d4',
   type:   'letter',
   letter: 'Z',
+}, {
+  key:  '44a05bfd-e2b3-4d5c-b75d-6c2541ee1ebd',
+  type: 'letter',
 }] as const

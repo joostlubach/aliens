@@ -2,8 +2,9 @@ import { BarcodeScanningResult, CameraView } from 'expo-camera'
 import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, Linking, TouchableWithoutFeedback, View } from 'react-native'
+import { Image, Linking, ScrollView, TouchableWithoutFeedback, View } from 'react-native'
 import Animated, { ZoomIn } from 'react-native-reanimated'
+import { useTimer } from 'react-timer'
 import { useBoolean } from 'react-util/hooks'
 
 import { Button, Center, HBox, Label, VBox } from '~/components'
@@ -11,6 +12,7 @@ import { focusedPromptSize } from '~/prompts/layout'
 import { GameStore, QRStore, Trigger } from '~/stores'
 import { colors, createUseStyles, layout } from '~/styling'
 import { observer } from '~/util'
+import { ProcessQRResult } from '../stores/GameStore'
 
 export interface QRScannerProps {
   focused?:        boolean
@@ -36,6 +38,21 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
     Linking.openSettings()    
   }, [])
 
+  const [showCross, setShowCross] = React.useState<boolean>(false)
+  const crossTimer = useTimer()
+
+  const flashCross = React.useCallback(() => {
+    crossTimer.clearAll()
+    crossTimer.setTimeout(() => setShowCross(true), 0)
+    crossTimer.setTimeout(() => setShowCross(false), 300)
+    crossTimer.setTimeout(() => setShowCross(true), 800)
+    crossTimer.setTimeout(() => setShowCross(false), 1100)
+    
+    return () => {
+      crossTimer.clearAll()
+    }
+  }, [crossTimer])
+
   // #region Scanning
 
   const lastScanAtRef = React.useRef<Date>(new Date(0))
@@ -47,7 +64,10 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
     if (timeSinceLastScan < 1000) { return }
     lastScanAtRef.current.setTime(Date.now())
 
-    gameStore.processQR(result.data)
+    const processResult = gameStore.processQR(result.data)
+    if (processResult === ProcessQRResult.Invalid) {
+      flashCross()
+    }
   }
 
   const handleTriggerPress = React.useCallback((trigger: Trigger) => {
@@ -87,6 +107,14 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
               small
             />
           </VBox>
+        )}
+        {showCross && (
+          <Center style={$.cross}>
+            <Image
+              source={require('%images/cross.png')}
+              style={{width: 333, height: 276}}
+            />
+          </Center>
         )}
         {triggerListOpen && renderTriggerList()}
       </View>
@@ -146,9 +174,11 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
   function renderTriggerList() {
     return (
       <Animated.View style={$.triggerList} entering={ZoomIn}>
-        <HBox wrap>
-          {gameStore.triggers.map(renderTriggerButton)}
-        </HBox>
+        <ScrollView>
+          <HBox wrap>
+            {gameStore.triggers.map(renderTriggerButton)}
+          </HBox>
+        </ScrollView>
       </Animated.View>
     )
   }
@@ -210,12 +240,14 @@ const useStyles = createUseStyles({
     position: 'absolute',
     left:     64,
     right:    156,
-    bottom:   46,
+    bottom:   42,
   },
 
   triggerList: {
     ...layout.overlay,
-    top: -60,
   },
 
+  cross: {
+    ...layout.overlay,
+  },
 })

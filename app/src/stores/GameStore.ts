@@ -21,8 +21,11 @@ export class GameStore {
   @observable
   public visiblePromptKeys = new Set<PromptKey>([])
 
+  @observable
+  public transientPromptKey: PromptKey | null = null
+
   @computed
-  public get visiblePrompts(): Array<Prompt | '$scanner' | '$typer'> {
+  public get visiblePrompts() {
     const prompts: Array<Prompt | '$scanner' | '$typer'> = []
     for (const key of this.visiblePromptKeys) {
       if (key.startsWith('$')) { continue }
@@ -39,6 +42,13 @@ export class GameStore {
       prompts.push('$typer')
     }
 
+    if (this.transientPromptKey != null) {
+      const prompt = this.promptStore.getPrompt(this.transientPromptKey, I18next.language)
+      if (prompt != null) {
+        prompts.push(prompt)
+      }
+    }
+
     return prompts
   }
 
@@ -49,9 +59,7 @@ export class GameStore {
   public get focusedPrompt() {
     if (this.focusedPromptKey == null) { return null }
     return this.visiblePrompts.find(prompt => {
-      if (prompt === '$scanner') {
-        return this.focusedPromptKey === '$scanner'
-      } else if (prompt === '$typer') {
+      if (prompt === '$scanner' || prompt === '$typer') {
         return this.focusedPromptKey === '$typer'
       } else {
         return prompt.key === this.focusedPromptKey
@@ -70,8 +78,15 @@ export class GameStore {
   }
 
   @action
-  public focusOnPrompt(name: PromptKey | null) {
-    this.focusedPromptKey = name
+  public focusOnPrompt(key: PromptKey | null, transient: boolean = false) {
+    this.focusedPromptKey = key
+    if (transient) {
+      this.transientPromptKey = key
+    } else {
+      if (this.transientPromptKey != null) {
+        this.transientPromptKey = null
+      }
+    }
   }
 
   @action
@@ -148,7 +163,13 @@ export class GameStore {
   }
 
   @action
-  public startGame(game: GameName, focus: boolean = true): boolean {
+  public startGame(game: GameName, options: StartGameOptions = {}) {
+    const {focus = true, force = false} = options
+    if (!force && !this.canStartGame(game)) {
+      this.focusOnPrompt(`${game}:notyet`, true)
+      return
+    }
+
     if (game === 'invitation') {
       this.availableInvitationWords = shuffle(invitationWords)
     }
@@ -156,19 +177,28 @@ export class GameStore {
     this.statuses[game] = GameStatus.Started
 
     this.appendPrompt(`${game}:start`, focus)
+  }
+
+  @action
+  public canStartGame(game: GameName) {
+    const gameIndex = games.indexOf(game)
+    const previousGames = games.slice(0, gameIndex)
+    if (previousGames.some(it => this.statuses[it] !== GameStatus.Complete)) {
+      return false
+    }
+
     return true
   }
 
   @action
-  public completeGame(game: GameName): boolean {
-    if (this.statuses[game] !== GameStatus.Started) { return false }
+  public completeGame(game: GameName) {
+    if (this.statuses[game] !== GameStatus.Started) { return }
     
     this.statuses[game] = GameStatus.Complete
 
     if (this.promptStore.keys.includes(`${game}:start`)) {
       this.appendPrompt(`${game}:complete`)
     }
-    return true
   }
 
   // #endregion
@@ -209,16 +239,16 @@ export class GameStore {
   }
 
   @observable
-  public unlockedLetters = new Set<string>('QWERTYUIOPASDFGHJKLZXCVBNM'.split(''))
+  public unlockedLetters = new Set<string>()
 
   @action
   public unlockLetter(letter: string) {
-    if (this.unlockedLetters.has(letter)) {
-      return false
-    }
-    
     this.unlockedLetters.add(letter)
-    return true
+  }
+
+  @action
+  public unlockAllLetters() {
+    this.unlockedLetters = new Set('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
   }
 
   public unmaskAlienLetters(text: string) {
@@ -272,13 +302,20 @@ export class GameStore {
   public executeTrigger(trigger: Trigger): boolean {
     switch (trigger.type) {
     case 'game:start':
-      return this.startGame(trigger.game)
+      this.startGame(trigger.game)
+      return true
 
     case 'game:complete':
-      return this.completeGame(trigger.game)
+      this.completeGame(trigger.game)
+      return true
 
     case 'letter':
-      return this.unlockLetter(trigger.letter)
+      if (trigger.letter) {
+        this.unlockLetter(trigger.letter)
+      } else {
+        this.unlockAllLetters()
+      }
+      return true
 
     default:
       return false
@@ -324,4 +361,9 @@ export enum ProcessQRResult {
   Success,
   Invalid,
   Unhandled
+}
+
+export interface StartGameOptions {
+  focus?: false
+  force?: false
 }
