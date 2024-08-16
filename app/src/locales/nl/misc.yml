@@ -5,3 +5,11 @@ game:
 buttons:
   dismiss: SLUITEN
   retry: NOG EEN KEER
+  start: START
+  letters: LETTERS
+
+start:
+  title: Start
+
+typer:
+  title: Uitnodiging

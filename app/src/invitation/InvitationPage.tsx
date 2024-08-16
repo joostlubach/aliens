@@ -188,8 +188,9 @@ const AddedWord = memo('AddedWord', (props: AddedWordProps) => {
 
 const useStyles = createUseStyles({
   InvitationPage: {
-    flex:    1,
-    padding: layout.padding.lg,
+    flex:              1,
+    padding:           layout.padding.lg,
+    paddingHorizontal: layout.padding.xl,
   },
 
   container: {

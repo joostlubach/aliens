@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTimer } from 'react-timer'
+import { useBoolean } from 'react-util/hooks'
 
-import { Button, Center, HBox, VBox } from '~/components'
+import { Button, Center, HBox, Label, VBox } from '~/components'
 import { DragDropMonitor } from '~/invitation/DragDropMonitor'
 import { DragLayer } from '~/invitation/DragLayer'
 import { DraggableWord } from '~/invitation/DraggableWord'
@@ -14,6 +15,7 @@ import { GameStore } from '~/stores'
 import { createUseStyles, layout } from '~/styling'
 import { observer } from '~/util'
 import { InvitationPage } from '../invitation/InvitationPage'
+import { UnlockedLetterList } from '../letters/UnlockedLetterList'
 import { focusedPromptSize } from '../prompts/layout'
 
 const Invitation = observer('Invitation', () => {
@@ -31,6 +33,8 @@ const Invitation = observer('Invitation', () => {
   const backToGame = React.useCallback(() => {
     router.back()
   }, [router])
+
+  const [lettersShown, showLetters, hideLetters] = useBoolean()
 
   const [showCross, setShowCross] = React.useState<boolean>(false)
   const crossTimer = useTimer()
@@ -84,6 +88,21 @@ const Invitation = observer('Invitation', () => {
             />
           </Button>
         </Center>
+        {gameStore.unlockedLetters.size > 0 && (
+          <Center style={[$.letters, {paddingTop: safeArea.top + layout.padding.sm}]}>
+            <Button onPress={showLetters} small>
+              <Label>
+                {t('button:letters')}
+              </Label>
+            </Button>
+          </Center>
+        )}
+
+        {lettersShown && (
+          <UnlockedLetterList
+            requestHide={hideLetters}
+          />
+        )}
       </VBox>
     )
   }
@@ -176,6 +195,13 @@ const useStyles = createUseStyles({
   back: {
     position: 'absolute',
     left:     0,
+    top:      0,
+    padding:  layout.padding.sm,
+  },
+
+  letters: {
+    position: 'absolute',
+    right:    0,
     top:      0,
     padding:  layout.padding.sm,
   },

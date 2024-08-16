@@ -34,6 +34,7 @@ export const padding = {
   sm: scaled(12),
   md: scaled(16),
   lg: scaled(20),
+  xl: scaled(32),
 }
 
 export const centerWidth = {

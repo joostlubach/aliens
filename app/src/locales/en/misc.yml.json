@@ -1,1 +1,1 @@
-{"game":{"start":"start","complete":"complete"},"buttons":{"dismiss":"DISMISS","retry":"RETRY","start":"START"},"typer":{"title":"Invitation"}}
+{"game":{"start":"start","complete":"complete"},"buttons":{"dismiss":"DISMISS","retry":"RETRY","start":"START","letters":"LETTERS"},"start":{"title":"Start"},"typer":{"title":"Invitation"},"letters":{"header":"YOU HAVE LEARNED THESE LETTERS"}}

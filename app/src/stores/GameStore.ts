@@ -1,7 +1,7 @@
 import I18next from 'i18next'
 import { shuffle } from 'lodash'
 import { action, computed, makeObservable, observable } from 'mobx'
-import { inject } from 'mobx-store'
+import { inject, persist } from 'mobx-store'
 
 import { Prompt, PromptKey, PromptStore } from './PromptStore'
 import { GameName, GameStatus, QRParser, Trigger } from './game'
@@ -208,7 +208,7 @@ export class GameStore {
   }
 
   @observable
-  public unlockedLetters = new Set<string>([])
+  public unlockedLetters = new Set<string>('QWERTYUIOPASDFGHJKLZXCVBNM'.split(''))
 
   @action
   public unlockLetter(letter: string) {
@@ -286,7 +286,35 @@ export class GameStore {
 
   // #endregion
 
+  // #region Reset
+
+  public reset() {
+    this.visiblePromptKeys.clear()
+    this.statuses = {}
+    this.availableInvitationWords = []
+    this.unlockedLetters.clear()
+  }
+
+  // #endregion
+
 }
+
+persist(
+  GameStore,
+  'game',
+  store => ({
+    visiblePromptKeys:        Array.from(store.visiblePromptKeys),
+    statuses:                 store.statuses,  
+    availableInvitationWords: store.availableInvitationWords,
+    unlockedLetters:          Array.from(store.unlockedLetters),
+  }),
+  (store, state) => {
+    store.visiblePromptKeys = new Set(state.visiblePromptKeys)
+    store.statuses = state.statuses
+    store.availableInvitationWords = state.availableInvitationWords
+    // store.unlockedLetters = new Set(state.unlockedLetters)
+  }
+)
 
 const invitationWords = ['DEAR', 'GUEST', 'PLEASE', 'COME', 'TO', 'OUR', "OVERLORD'S", 'JOINING']
 

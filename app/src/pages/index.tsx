@@ -31,6 +31,11 @@ const Index = observer('Index', () => {
     router.push('/game')
   }, [gameStore, router])
 
+  const resetGame = React.useCallback(() => {
+    gameStore.reset()
+    startGame()
+  }, [gameStore, startGame])
+
   function render() {
     return (
       <VBox flex>
@@ -51,6 +56,7 @@ const Index = observer('Index', () => {
             <Button
               caption={t('buttons:start')}
               onPress={startGame}
+              onLongPress={resetGame}
             />
           ) : (
             <VBox gap={layout.padding.sm}>

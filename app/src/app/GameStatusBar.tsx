@@ -46,8 +46,8 @@ export const GameStatusBar = observer('GameStatusBar', () => {
 })
 
 interface GameStatusIndicatorProps {
-  icon:    ImageProps['source']
-  status?: GameStatus
+  icon:   ImageProps['source']
+  status: GameStatus | undefined
 }
 
 const GameStatusIndicator = observer('GameStatusIndicator', (props: GameStatusIndicatorProps) => {
@@ -58,7 +58,7 @@ const GameStatusIndicator = observer('GameStatusIndicator', (props: GameStatusIn
 
   function render() {
     return (
-      <Pop in={status !== GameStatus.Unavailable}>
+      <Pop in={status != null}>
         <Center style={$.GameStatusIndicator}>
           <Image source={icon}/>
         </Center>

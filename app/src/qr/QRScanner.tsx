@@ -1,5 +1,4 @@
 import { BarcodeScanningResult, CameraView } from 'expo-camera'
-import { useRouter } from 'expo-router'
 import { useStore } from 'mobx-store'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -7,11 +6,11 @@ import { Image, Linking, TouchableWithoutFeedback, View } from 'react-native'
 import Animated, { ZoomIn } from 'react-native-reanimated'
 import { useBoolean } from 'react-util/hooks'
 
-import { Button, Center, Label, VBox } from '~/components'
+import { Button, Center, HBox, Label, VBox } from '~/components'
+import { focusedPromptSize } from '~/prompts/layout'
 import { GameStore, QRStore, Trigger } from '~/stores'
 import { colors, createUseStyles, layout } from '~/styling'
 import { observer } from '~/util'
-import { focusedPromptSize } from '../prompts/layout'
 
 export interface QRScannerProps {
   focused?:        boolean
@@ -29,7 +28,6 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
   const gameStore = useStore(GameStore)
   const {hasPermission, ensurePermission} = qrStore
 
-  const router = useRouter()
   const [triggerListOpen, openTriggerList, closeTriggerList] = useBoolean()
 
   const [t] = useTranslation('qr')
@@ -148,18 +146,19 @@ export const QRScanner = observer('QRScanner', (props: QRScannerProps) => {
   function renderTriggerList() {
     return (
       <Animated.View style={$.triggerList} entering={ZoomIn}>
-        {gameStore.triggers.map(renderTriggerButton)}
+        <HBox wrap>
+          {gameStore.triggers.map(renderTriggerButton)}
+        </HBox>
       </Animated.View>
     )
   }
 
   function renderTriggerButton(trigger: Trigger) {
-    if (trigger.type === 'letter') { return null }
-
     return (
       <Button
         key={trigger.key}
-        caption={trigger.type + ' ' + trigger.game}
+        style={{width: trigger.type === 'letter' ? layout.window.width / 3 : layout.window.width}}
+        caption={trigger.type + ' ' + (trigger.type === 'letter' ? trigger.letter : trigger.game)}
         onPress={handleTriggerPress.bind(null, trigger)}
       />
     )
@@ -216,6 +215,7 @@ const useStyles = createUseStyles({
 
   triggerList: {
     ...layout.overlay,
+    top: -60,
   },
 
 })

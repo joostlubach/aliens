@@ -17,6 +17,7 @@ import { Center } from './layout'
 export interface ButtonProps extends TouchableWithoutFeedbackProps {
   caption?: string
   small?:   boolean
+  icon?:    boolean
 
   children?: React.ReactNode
 }
@@ -27,8 +28,10 @@ export const Button = memo('Button', (props: ButtonProps) => {
   const {
     caption,
     small = false,
+    icon = false,
     disabled,
     children,
+    style: props_style,
     ...rest
   } = props
 
@@ -96,7 +99,7 @@ export const Button = memo('Button', (props: ButtonProps) => {
         disabled={disabled}
         {...rest}
       >
-        <View style={[$.Button, disabled && $.disabled]}>
+        <View style={[$.Button, disabled && $.disabled, props_style]}>
           {renderBackgroundSlices()}
           {renderContent()}
         </View>
@@ -123,7 +126,7 @@ export const Button = memo('Button', (props: ButtonProps) => {
 
   function renderContent() {
     return (
-      <Center style={[$.content, small && $.contentSmall]}>
+      <Center style={[$.content, small && $.contentSmall, icon && $.contentIcon]}>
         {caption != null && (
           <Label font={small ? 'title-sm' : 'title-md'} shadow={false} color={colors.button.fg}>
             {caption}
@@ -188,7 +191,7 @@ const useStyles = createUseStyles({
   },
 
   content: {
-    minHeight: 24,
+    minHeight: 32,
     minWidth:  92,
 
     paddingVertical: layout.padding.inline.md,
@@ -200,5 +203,9 @@ const useStyles = createUseStyles({
     paddingVertical: layout.padding.inline.sm,
     paddingLeft:     layout.padding.inline.md - 2,
     paddingRight:    layout.padding.inline.md + 2,
+  },
+
+  contentIcon: {
+    minWidth: 32,
   },
 })

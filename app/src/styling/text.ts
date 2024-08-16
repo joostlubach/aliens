@@ -1,8 +1,14 @@
-import { TextStyle } from 'react-native'
+import { Platform, TextStyle } from 'react-native'
 
 export const fontFaces = {
-  sans:  fontFace('Futura', require('%fonts/futur.ttf')),
-  alien: fontFace('SpaceDude', require('%fonts/spacedude.ttf')),
+  sans: Platform.select<string | FontFace>({
+    android: 'futura',
+    default: fontFace('Futura', require('%fonts/futura.otf')),
+  }),
+  alien: Platform.select<string | FontFace>({
+    android: 'spacedude',
+    default: fontFace('spacedude', require('%fonts/spacedude.otf')),
+  }),
 }
 
 export const fonts = {
@@ -19,12 +25,17 @@ export const fonts = {
   'alien-sm': font(fontFaces.alien, 700, 22, 1.2),
 }
 
-function fontFace(family: string, source: any) {
+interface FontFace {
+  family: string
+  source: any
+}
+
+function fontFace(family: string, source: any): FontFace {
   return {family, source}
 }
 
-function font(face: {family: string}, weight: number, size: number, lineHeight: number = 1.2) {
-  return {family: face.family, weight, size, lineHeight}
+function font(face: string | FontFace, weight: number, size: number, lineHeight: number = 1.2) {
+  return {family: typeof face === 'string' ? face : face.family, weight, size, lineHeight}
 }
 
 export function getTextStyle(spec: FontSpec): TextStyle {
