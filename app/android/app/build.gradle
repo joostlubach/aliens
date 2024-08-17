@@ -88,7 +88,7 @@ android {
         applicationId 'co.mosdev.the_joining'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 1000000
         versionName "1.0.0"
     }
     signingConfigs {

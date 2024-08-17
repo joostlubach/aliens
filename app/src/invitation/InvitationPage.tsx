@@ -39,64 +39,92 @@ export const InvitationPage = observer('InvitationPage', (props: InvitationPageP
 
   // #region Layouts
 
-  const wordLayoutRef = React.useRef<Map<string, LayoutRectangle>>(new Map())
+  const wordLayoutsRef = React.useRef<Map<string, LayoutRectangle>>(new Map())
+  const insertionPointsRef = React.useRef<Point[] | null>(null)
 
-  const layoutWord = React.useCallback((word: string, layout: LayoutRectangle | null) => {
+  const handleWordLayout = React.useCallback((word: string, layout: LayoutRectangle | null) => {
     if (layout == null) {
-      wordLayoutRef.current.delete(word)
+      wordLayoutsRef.current.delete(word)
     } else {
-      wordLayoutRef.current.set(word, layout)
+      wordLayoutsRef.current.set(word, layout)
     }
   }, [])
 
-  const indexedLayouts = React.useCallback((except: string): LayoutRectangle[] => {
-    const indexed: LayoutRectangle[] = []
+  const calculateInsertionPoints = React.useCallback(() => {
+    const insertionPoints: Point[] = []
 
     const set = (index: number, layout: LayoutRectangle) => {
-      while (indexed.length <= index) {
-        indexed.push({x: 0, y: 0, width: 0, height: 0})
+      while (insertionPoints.length <= index) {
+        insertionPoints.push({x: 0, y: 0})
       }
-      indexed[index] = layout
+      insertionPoints[index] = {
+        x: layout.x - wordGap / 2 + paddingHorizontal,
+        y: layout.y - wordGap / 2 + paddingVertical + layout.height / 2,
+      }
     }
 
-    for (const [word, layout] of wordLayoutRef.current.entries()) {
-      // if (word === except) { continue }
+    for (const [word, layout] of wordLayoutsRef.current.entries()) {
       const index = wordsRef.current.findIndex(it => it === word)
       set(index, layout)
+
+      if (index === wordsRef.current.length - 1) {
+        set(index + 1, {
+          x:      layout.x + layout.width + wordGap,
+          y:      layout.y,
+          width:  0,
+          height: layout.height,
+        })
+      }
     }
 
-    return indexed    
+    insertionPointsRef.current = insertionPoints    
   }, [wordsRef])
 
-  const wordIndexForPoint = React.useCallback((word: string, point: Point) => {
-    const layouts = indexedLayouts(word)
+  const wordIndexForPoint = React.useCallback((point: Point) => {
+    const insertionPoints = insertionPointsRef.current
+    if (insertionPoints == null) { return -1 }
 
-    for (const [index, layout] of layouts.entries()) {
-      const nextX = layout.x + layout.width + wordGap
-      const nextY = layout.y + layout.height + wordGap
+    // console.log('----')
+    // console.log(point.x, point.y)
+    // console.log(insertionPoints.map(it => `(${it.x}, ${it.y})`).join(', '))
 
-      if (point.x < layout.x || point.x >= nextX) { continue }
-      if (point.y < layout.y || point.y >= nextY) { continue }
-      return index
+    let minDistance = Infinity
+    let closestPointIndex: number = insertionPoints.length
+
+    for (const [index, insertionPoint] of insertionPoints.entries()) {
+      const distance = Math.hypot(point.x - insertionPoint.x, point.y - insertionPoint.y)
+      if (distance >= minDistance) { continue }
+
+      minDistance = distance
+      closestPointIndex = index
     }
 
-    return words.length
-  }, [indexedLayouts, words.length])
+    return closestPointIndex
+  }, [])
 
   // #endregion
 
   // #region Dropzone
 
   const onHover = React.useCallback((word: string, point: Point) => {
+    if (insertionPointsRef.current == null) {
+      calculateInsertionPoints()
+    }
+
     const words = wordsRef.current
     const currentIndex = words.findIndex(it => it === word)
-    const nextIndex = wordIndexForPoint(word, point)
+    const nextIndex = wordIndexForPoint(point)
+    if (nextIndex === -1) { return }
     if (currentIndex === nextIndex) { return }
 
     const newWords = [...words].filter(it => it !== word)
     newWords.splice(nextIndex, 0, word)
     setWords(newWords)
-  }, [wordIndexForPoint, wordsRef])
+  }, [calculateInsertionPoints, wordIndexForPoint, wordsRef])
+
+  const onLeave = React.useCallback(() => {
+    insertionPointsRef.current = null
+  }, [])
 
   const onDrop = React.useCallback(() => {
     gameStore.setInvitationWords(wordsRef.current)
@@ -114,9 +142,9 @@ export const InvitationPage = observer('InvitationPage', (props: InvitationPageP
 
     containerRef.current?.measure((_x, _y, _width, _height, pageX, pageY) => {
       const layout = {x: pageX, y: pageY, width, height}
-      dd.registerDropZone('page', layout, {onHover, onDrop, onDropOutside})
+      dd.registerDropZone('page', layout, {onHover, onLeave, onDrop, onDropOutside})
     })
-  }, [dd, onDrop, onDropOutside, onHover])
+  }, [dd, onDrop, onDropOutside, onHover, onLeave])
 
   React.useEffect(() => {
     return () => {
@@ -141,7 +169,7 @@ export const InvitationPage = observer('InvitationPage', (props: InvitationPageP
                 index={index}
                 word={word}
                 dd={dd}
-                onLayout={layoutWord}
+                onLayout={handleWordLayout}
               />
             ))}
           </HBox>
@@ -186,14 +214,17 @@ const AddedWord = memo('AddedWord', (props: AddedWordProps) => {
 
 })
 
+const paddingVertical = layout.padding.lg
+const paddingHorizontal = layout.padding.xl
+
 const useStyles = createUseStyles({
   InvitationPage: {
-    flex:              1,
-    padding:           layout.padding.lg,
-    paddingHorizontal: layout.padding.xl,
+    flex: 1,
   },
 
   container: {
     flex: 1,
+    paddingVertical,
+    paddingHorizontal,
   },
 })

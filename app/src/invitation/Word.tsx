@@ -20,7 +20,7 @@ export const Word = memo('Word', (props: WordProps) => {
   function render() {
     return (
       <Center style={$.Word}>
-        <AlienLabel shadow={false} color={colors.black}>
+        <AlienLabel size='sm' shadow={false} color={colors.black}>
           {word}
         </AlienLabel>
       </Center>

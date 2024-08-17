@@ -91,6 +91,7 @@ export class GameStore {
 
   @action
   public appendPrompt(name: PromptKey, focus: boolean = true) {
+    console.log("APPEND", name)
     this.visiblePromptKeys.add(name)
     
     if (focus) {
@@ -142,8 +143,13 @@ export class GameStore {
 
         this.makeGameAvailable(game as GameName)
       }
+
+      this.availableInvitationWords = shuffle(this.correctInvitationWords)
     } else {
-      this.appendPrompt('start')
+      this.availableInvitationWords = shuffle(this.correctInvitationWords)
+      if (!this.visiblePromptKeys.has('start')) {
+        this.appendPrompt('start')
+      }
     }
   }
   
@@ -170,7 +176,8 @@ export class GameStore {
     }
 
     if (game === 'invitation') {
-      this.availableInvitationWords = shuffle(invitationWords)
+      this.availableInvitationWords = shuffle(this.correctInvitationWords)
+      this.invitationWords = []
     }
 
     this.statuses[game] = GameStatus.Started
@@ -190,25 +197,28 @@ export class GameStore {
   }
 
   @action
-  public completeGame(game: GameName) {
-    if (this.statuses[game] !== GameStatus.Started) { return }
+  public completeGame(game: GameName, force: boolean = false) {
+    if (!force && this.statuses[game] !== GameStatus.Started) { return }
     
     this.statuses[game] = GameStatus.Complete
-
-    if (this.promptStore.keys.includes(`${game}:start`)) {
-      this.appendPrompt(`${game}:complete`)
-    }
+    this.appendPrompt(`${game}:complete`)
   }
 
   // #endregion
 
   // #region Invitation & letters
+  
+  @computed
+  public get correctInvitationWords(): string[] {
+    const prompt = this.promptStore.getPrompt('invitation', I18next.language)
+    return prompt?.paragraphs[0]?.split(' ') ?? []
+  }
+
+  @observable
+  public availableInvitationWords: string[] = []
 
   @observable
   public invitationWords: string[] = []
-  
-  @observable
-  public availableInvitationWords: string[] = []
 
   @computed
   public get remainingInvitationWords() {
@@ -217,7 +227,7 @@ export class GameStore {
 
   @computed
   public get isInvitationCorrect() {
-    return this.invitationWords.join(' ') === invitationWords.join(' ')
+    return this.invitationWords.join(' ') === this.correctInvitationWords.join(' ')
   }
 
   @computed
@@ -228,6 +238,18 @@ export class GameStore {
   @action
   public setInvitationWords(words: string[]) {
     this.invitationWords = words
+  }
+
+  @action
+  public toggleWord(word: string) {
+    const next = [...this.invitationWords]
+    const index = next.indexOf(word)
+    if (index === -1) {
+      next.push(word)
+    } else {
+      next.splice(index, 1)
+    }
+    this.invitationWords = next
   }
 
   @action
@@ -329,7 +351,6 @@ export class GameStore {
   public reset() {
     this.visiblePromptKeys.clear()
     this.statuses = {}
-    this.availableInvitationWords = []
     this.unlockedLetters.clear()
   }
 
@@ -350,11 +371,9 @@ persist(
     store.visiblePromptKeys = new Set(state.visiblePromptKeys)
     store.statuses = state.statuses
     store.availableInvitationWords = state.availableInvitationWords
-    // store.unlockedLetters = new Set(state.unlockedLetters)
+    store.unlockedLetters = new Set(state.unlockedLetters)
   }
 )
-
-const invitationWords = ['DEAR', 'GUEST', 'PLEASE', 'COME', 'TO', 'OUR', "OVERLORD'S", 'JOINING']
 
 export enum ProcessQRResult {
   Success,

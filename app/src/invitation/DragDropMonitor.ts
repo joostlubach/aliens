@@ -26,11 +26,13 @@ export class DragDropMonitor {
   private currentDropZone: DropZone | null = null
 
   @computed
-  public get currentCenter() {
+  public get currentPageCenter() {
     if (this.dragPoint == null) { return null }
+    if (this.draggableLayout == null) { return null }
+
     return {
-      x: this.dragPoint.x - this.topLeftOffset.width,
-      y: this.dragPoint.y - this.topLeftOffset.height,
+      x: this.dragPoint.x - this.topLeftOffset.width + this.draggableLayout.width / 2,
+      y: this.dragPoint.y - this.topLeftOffset.height + this.draggableLayout.height / 2,
     }
   }
 
@@ -74,7 +76,7 @@ export class DragDropMonitor {
     if (this.draggedWord == null) { return }
 
     const dropZone = this.queryDropZone()
-    if (dropZone === this.currentDropZone) { return }
+    if (dropZone?.name === this.currentDropZone?.name) { return }
 
     this.currentDropZone?.onLeave?.(this.draggedWord)
     this.currentDropZone = dropZone
@@ -82,13 +84,13 @@ export class DragDropMonitor {
   }
 
   private queryDropZone() {
-    if (this.currentCenter == null) { return null }
+    if (this.currentPageCenter == null) { return null }
 
     for (const dropZone of this.dropZones.values()) {
-      if (this.currentCenter.x < dropZone.layout.x) { continue }
-      if (this.currentCenter.y < dropZone.layout.y) { continue }
-      if (this.currentCenter.x > dropZone.layout.x + dropZone.layout.width) { continue }
-      if (this.currentCenter.y > dropZone.layout.y + dropZone.layout.height) { continue }
+      if (this.currentPageCenter.x < dropZone.layout.x) { continue }
+      if (this.currentPageCenter.y < dropZone.layout.y) { continue }
+      if (this.currentPageCenter.x > dropZone.layout.x + dropZone.layout.width) { continue }
+      if (this.currentPageCenter.y > dropZone.layout.y + dropZone.layout.height) { continue }
       return dropZone
     }
 
@@ -113,13 +115,18 @@ export class DragDropMonitor {
   @action
   public drag(point: Point) {
     if (!this.isDragging) { return }
+    if (this.currentPageCenter == null) { return }
+    if (this.draggedWord == null) { return }
+
     this.dragPoint = point
-  
+
     this.updateDropZone()
-    this.currentDropZone?.onHover?.(this.draggedWord!, {
-      x: point.x - this.currentDropZone.layout.x,
-      y: point.y - this.currentDropZone.layout.y,
-    })
+    if (this.currentDropZone != null) {
+      this.currentDropZone.onHover?.(this.draggedWord, {
+        x: this.dragPoint.x - this.currentDropZone.layout.x,
+        y: this.dragPoint.y - this.currentDropZone.layout.y,
+      })
+    }
   }
 
   @action

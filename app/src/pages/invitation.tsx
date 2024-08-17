@@ -53,7 +53,7 @@ const Invitation = observer('Invitation', () => {
 
   const checkInvitation = React.useCallback(() => {
     if (gameStore.isInvitationCorrect) {
-      gameStore.completeGame('invitation')
+      gameStore.completeGame('invitation', true)
       router.back()
     } else {
       flashCross()
@@ -174,7 +174,7 @@ const useStyles = createUseStyles({
     left:     24,
     right:    24,
     top:      68,
-    bottom:   275,
+    bottom:   246,
   },
 
   check: {

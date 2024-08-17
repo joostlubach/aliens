@@ -52,7 +52,7 @@ export const DraggableWord = observer('DraggableWord', (props: DraggableWordProp
       dd.endDrag()
 
       if (Math.abs(state.dx) < 2 && Math.abs(state.dy) < 2) {
-        gameStore.addWordToEnd(props.word)
+        gameStore.toggleWord(props.word)
       }
     },
   }), [dd, gameStore, props.word])
