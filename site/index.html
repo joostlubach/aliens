@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>THE JOINING</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <style>
+    @font-face {
+      font-family: Futura;
+      src: url(/futura.otf);
+    }
+
+    @font-face {
+      font-family: SpaceDude;
+      src: url(/spacedude.otf);
+    }
+
+    html {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+
+      font-family: Futura;
+      font-weight: 300;
+      font-size: 38px;
+
+      display: flex;
+      flex-direction: column;
+    }
+
+    .background {
+      position: fixed;
+      inset: 0;
+
+      background-image: url(/background@3x.jpg);
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    h1 {
+      font: inherit;
+      margin: 0;
+      padding: 0;
+    }
+
+    .homeart1 {
+      position: fixed;
+      top: 40px;
+      left: 30px;
+
+      background-image: url(/homeart1@3x.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      width: 251px;
+      height: 215px;
+      opacity: 0.5;
+    }
+
+    .homeart2 {
+      position: fixed;
+      bottom: 40px;
+      right: 30px;
+
+      background-image: url(/homeart2@3x.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      width: 294px;
+      height: 398px;
+      opacity: 0.5;
+    }
+    
+    .container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      min-height: 100%;
+
+      background: rgba(0, 0, 0, 0.6);
+
+      text-align: center;
+      padding: 20px;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      gap: 120px;
+    }
+    
+    .label {
+      color: white;
+      text-align: center;
+    }
+
+    .furigana {
+      letter-spacing: 8px;
+      margin-left: 6px;
+    }
+
+    .alien {
+      font-family: SpaceDude;
+      font-size: 48px;
+    }
+
+    .small {
+      font-size: 12px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      gap: 20px;
+    }
+    
+    .download-button {
+      display: block;
+    }
+
+    * { 
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+  <div class="homeart1"></div>
+  <div class="homeart2"></div>
+
+  <div class="container">
+    <div>
+      <h1 class="label furigana">
+        THE JOINING
+      </h1>
+      <h1 class="label alien">
+        THE JOINING
+      </h1>
+    </div>
+    
+    <div class="buttons">
+      <a class="download-button" href="https://apps.apple.com/us/app/the-joining/id6627339659">
+        <img src="/app-store.svg" width="270"/>
+      </a>
+      <a class="download-button" href="https://s3.eu-central-1.amazonaws.com/co.mosdev.joining/app-release.apk">
+        <img src="/android.png" width="270" height="90"/>
+      </a>
+
+      <div class="label small">
+        DEAR HUMAN, WE HAVE COME TO UNDERSTAND THAT THE ANDROID VERSION DOES NOT WORK ON INFERIOR DEVICES.
+        IF IT DOES NOT WORK FOR YOU, FIND A HUMAN WITH AN IPHONE.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
