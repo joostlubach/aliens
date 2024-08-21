@@ -5,6 +5,7 @@ void setupDisplay();
 
 void printCode(String code);
 void showHarp();
+void showVictory();
 
 void flashDisplay();
 void turnDisplayOn();

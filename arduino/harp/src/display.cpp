@@ -62,6 +62,10 @@ void showHarp() {
   turnDisplayOn();
 }
 
+void showVictory() {
+  tft.drawRGBBitmap(0, 0, victory, VICTORY_WIDTH, VICTORY_HEIGHT);
+}
+
 void flashDisplay() {
   turnDisplayOff();
   delay(100);

@@ -4,10 +4,9 @@
 void setupLasers();
 
 void turnOnLaser(int laser);
-void turnOfLaser(int laser);
+void turnOffLaser(int laser);
 
 void turnOnAllLasers(int interval);
-
-void victoryDemo();
+void turnOffAllLasers(int interval);
 
 #endif

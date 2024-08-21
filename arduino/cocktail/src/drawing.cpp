@@ -1,7 +1,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 
-#include "types.h"
+#include "cup.h"
 #include "images.h"
 
 #define CUP_H 80
@@ -20,46 +20,81 @@
 #define CUP2_INDICATOR_X 170
 #define CUP3_INDICATOR_X 254
 
-#define LEVEL_MAX 2000.0
-#define ALCOHOL_MAX 1000.0
-#define SEDIMENT_MAX 1000.0
+// LINKS: 500 LEEG
+// LINKS: 1100 1/3 VOL
+// LINKS: 1500 2/3 VOL
+
+// MIDDEN: 500 LEEG
+// MIDDEN: 1530 1/3 VOL
+// MIDDEN: 2600 2/3 VOL
+
+// RECHTS: 500 LEEG
+// RECHTS: 850 1/3 VOL
+// RECHTS: 1500 2/3 VOL
+
+#define CUP1_LEVEL_EMPTY 500.0
+#define CUP1_LEVEL_ONE_THIRD 1100.0
+#define CUP1_LEVEL_TWO_THIRDS 1500.0
+
+#define CUP2_LEVEL_EMPTY 500.0
+#define CUP2_LEVEL_ONE_THIRD 1100.0
+#define CUP2_LEVEL_TWO_THIRDS 1800.0
+
+#define CUP3_LEVEL_EMPTY 500.0
+#define CUP3_LEVEL_ONE_THIRD 850.0
+#define CUP3_LEVEL_TWO_THIRDS 1500.0
+
+#define LEVEL_MAX 5300.0
 
 #define BLUE 0x347C
 
-void drawCup(Adafruit_ILI9341 *tft, Cup *cup, int cupX, int indicatorX);
+void drawCup(Adafruit_ILI9341 *tft, Cup *cup, float empty, float oneThirds, float twoThirds, int cupX, int indicatorX);
 
 void draw(Adafruit_ILI9341 *tft, Cup *cup1, Cup *cup2, Cup *cup3) {
-  drawCup(tft, cup1, CUP1_X, CUP1_INDICATOR_X);
-  drawCup(tft, cup2, CUP2_X, CUP2_INDICATOR_X);
-  drawCup(tft, cup3, CUP3_X, CUP3_INDICATOR_X);
+  drawCup(tft, cup1, CUP1_LEVEL_EMPTY, CUP1_LEVEL_ONE_THIRD, CUP2_LEVEL_TWO_THIRDS, CUP1_X, CUP1_INDICATOR_X);
+  drawCup(tft, cup2, CUP2_LEVEL_EMPTY, CUP2_LEVEL_ONE_THIRD, CUP2_LEVEL_TWO_THIRDS, CUP2_X, CUP2_INDICATOR_X);
+  drawCup(tft, cup3, CUP3_LEVEL_EMPTY, CUP3_LEVEL_ONE_THIRD, CUP2_LEVEL_TWO_THIRDS, CUP3_X, CUP3_INDICATOR_X);
 }
 
-const uint16_t *indicatorForLevel(int level, int min, int max) {
-  if (min != UNDEFINED && level < min) { return higher; }
-  if (max != UNDEFINED && level > max) { return lower; }
+const uint16_t *indicatorForStatus(int status) {
+  if (status < 0) { return higher; }
+  if (status > 0) { return lower; }
   return ok;
 }
 
-void drawCup(Adafruit_ILI9341 *tft, Cup *cup, int cupX, int indicatorX) {
-  int height = (int)round((float)cup->levels.level / LEVEL_MAX * (float)CUP_H);
+int calculateHeight(float value, float empty, float oneThird, float twoThirds) {
+  if (value <= empty) {
+    return 0;
+  } else if (value <= oneThird) {
+    return (value - empty) / (oneThird - empty) * (float)CUP_H / 3.0;
+  } else if (value <= twoThirds) {
+    return ((value - oneThird) / (twoThirds - oneThird) + 1.0) * (float)CUP_H / 3.0;
+  } else {
+    return min((float)CUP_H, ((value - oneThird) / (twoThirds - oneThird) + (float)2.0) * (float)CUP_H / (float)3.0);
+  }
+}
+
+void drawCup(Adafruit_ILI9341 *tft, Cup *cup, float empty, float oneThird, float twoThirds, int cupX, int indicatorX) {
+  int height = calculateHeight(cup->averageLiquid(), empty, oneThird, twoThirds);
 
   // Draw the part above the level white, and the part below blue.
-  tft->fillRect(cupX, CUP_Y, CUP_W, height, ILI9341_WHITE);
-  tft->fillRect(cupX, CUP_Y + height, CUP_W, CUP_H - height, BLUE);
+  tft->fillRect(cupX, CUP_Y, CUP_W, CUP_H - height, ILI9341_WHITE);
+  tft->fillRect(cupX, CUP_Y + CUP_H - height, CUP_W, height, BLUE);
 
   // Draw the indicators
-  if (cup->limits.level_min != UNDEFINED || cup->limits.level_max != UNDEFINED) {
-    const uint16_t *indicator = indicatorForLevel(cup->levels.level, cup->limits.level_min, cup->limits.level_max);
+  
+  if (cup->limits.liquid_min != UNDEFINED || cup->limits.liquid_max != UNDEFINED) {
+    const uint16_t *indicator = indicatorForStatus(cup->liquidStatus());
     tft->drawRGBBitmap(indicatorX, LEVEL_INDICATOR_Y, indicator, INDICATOR_WIDTH, INDICATOR_HEIGHT);
   }
 
   if (cup->limits.alcohol_min != UNDEFINED || cup->limits.alcohol_max != UNDEFINED) {
-    const uint16_t *indicator = indicatorForLevel(cup->levels.alcohol, cup->limits.alcohol_min, cup->limits.alcohol_max);
+    const uint16_t *indicator = indicatorForStatus(cup->alcoholStatus());
     tft->drawRGBBitmap(indicatorX, ALCOHOL_INDICATOR_Y, indicator, INDICATOR_WIDTH, INDICATOR_HEIGHT);
   }
 
-  if (cup->limits.sediment_min != UNDEFINED || cup->limits.sediment_max != UNDEFINED) {
-    const uint16_t *indicator = indicatorForLevel(cup->levels.sediment, cup->limits.sediment_min, cup->limits.sediment_max);
+  if (cup->limits.turbidity_min != UNDEFINED || cup->limits.turbidity_max != UNDEFINED) {
+    const uint16_t *indicator = indicatorForStatus(cup->turbidityStatus());
     tft->drawRGBBitmap(indicatorX, SEDIMENT_INDICATOR_Y, indicator, INDICATOR_WIDTH, INDICATOR_HEIGHT);
   }
 }

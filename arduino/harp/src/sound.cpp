@@ -3,12 +3,18 @@
 
 #include "sound.h"
 
-#define VICTORY 5
+#define VICTORY 11
 #define ERROR 7
 
 // Maak een object voor het scherm aan
 HardwareSerial gd3200(2);
 DFPlayerMini_Fast df;
+
+char *currentTest = new char[3] {0, 0};
+int currentTestLength = 0;
+
+void resetTest();
+void playSound(int sound);
 
 void setupSound() {
   pinMode(16, OUTPUT);
@@ -25,12 +31,32 @@ void setupSound() {
   Serial.printf("Number of tracks: %d\n", numTracks);
 }
 
+void soundtestDigit(char digit) {
+  if (currentTestLength < 2) {
+    currentTest[currentTestLength++] = digit;
+  }
+
+  if (currentTestLength >=2) {
+    int sound = atoi(currentTest);
+    playSound(sound);
+
+    resetTest();
+  }
+}
+
+void resetTest() {
+  for (int i = 0; i < 2; i++) {
+    currentTest[i] = '\0';
+  }
+  currentTestLength = 0;
+}
+
 int soundForNote(Note note) {
   switch (note) {
-    case G: return 2;
-    case B: return 3;
-    case C: return 4;
-    case D: return 1;
+    case G: return 9;
+    case B: return 1;
+    case C: return 3;
+    case D: return 5;
     default: return -1;
   }
 }

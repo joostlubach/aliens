@@ -2,9 +2,9 @@
 
 #include "lasers.h"
 
-#define LASER_COUNT 4
+#define LASER_COUNT 1
 
-const int laserPins[LASER_COUNT] = {26, 27, 12, 14};
+const int laserPins[LASER_COUNT] = {32};
 
 void setupLasers() {
     for (int i = 0; i < LASER_COUNT; i++) {
@@ -13,10 +13,12 @@ void setupLasers() {
 }
 
 void turnOnLaser(int laser) {
+  Serial.printf("Laser %d ON\n", laser);
   digitalWrite(laserPins[laser], LOW);
 }
 
-void turnOfLaser(int laser) {
+void turnOffLaser(int laser) {
+  Serial.printf("Laser %d OFF\n", laser);
   digitalWrite(laserPins[laser], HIGH);
 }
 
@@ -27,23 +29,9 @@ void turnOnAllLasers(int interval) {
   }
 }
 
-void victoryDemo() {
-  for (int i = 0; i < 100; i++) {
-    digitalWrite(laserPins[0], LOW);
-    delay(50);
-    digitalWrite(laserPins[1], LOW);
-    delay(50);
-    digitalWrite(laserPins[2], LOW);
-    delay(50);
-    digitalWrite(laserPins[3], LOW);
-    delay(50);
-    digitalWrite(laserPins[0], HIGH);
-    delay(50);
-    digitalWrite(laserPins[1], HIGH);
-    delay(50);
-    digitalWrite(laserPins[2], HIGH);
-    delay(50);
-    digitalWrite(laserPins[3], HIGH);
-    delay(50);
+void turnOffAllLasers(int interval) {
+  for (int i = 0; i < LASER_COUNT; i++) {
+    turnOffLaser(i);
+    delay(interval);
   }
 }

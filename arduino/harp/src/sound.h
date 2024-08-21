@@ -9,6 +9,7 @@ typedef enum {
 } Note;
 
 void setupSound();
+void soundtestDigit(char digit);
 
 void playSound(int sound);
 void playNote(Note note);
